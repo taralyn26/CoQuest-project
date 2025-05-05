@@ -1,30 +1,29 @@
-// app/signup.tsx
+// app/login.tsx
 import React, { useState } from 'react';
 import {
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 
 interface Props {
-  onSignUp: () => void;
-  onGoToLogin: () => void;
+  onLogin: () => void;
+  onGoToSignUp: () => void;
 }
 
-export default function SignUp({ onSignUp, onGoToLogin }: Props) {
+export default function Login({ onLogin, onGoToSignUp }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.appTitle}>CoQuest</Text>
       <Text style={styles.appSubtitle}>enjoy some spontaneity!</Text>
 
-      <Text style={styles.screenTitle}>  Sign Up</Text>
+      <Text style={styles.screenTitle}>  Login</Text>
 
       <View style={styles.card}>
         <Text style={styles.label}>Email</Text>
@@ -40,29 +39,19 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
         <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
-          placeholder="Create a password"
+          placeholder="Enter your password"
           placeholderTextColor="#999"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
 
-        <Text style={styles.label}>Confirm Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Re-enter password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={confirm}
-          onChangeText={setConfirm}
-        />
-
-        <Pressable style={styles.primaryButton} onPress={onSignUp}>
-          <Text style={styles.primaryButtonText}>Sign Up</Text>
+        <Pressable style={styles.primaryButton} onPress={onLogin}>
+          <Text style={styles.primaryButtonText}>Sign In</Text>
         </Pressable>
 
-        <Pressable onPress={onGoToLogin}>
-          <Text style={styles.link}>Already have an account? log in</Text>
+        <Pressable onPress={onGoToSignUp}>
+          <Text style={styles.link}>New Here? sign up</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -91,6 +80,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: 'white',
+    width: '100%',
     width: '90%',
     maxWidth: 400,
     borderRadius: 12,

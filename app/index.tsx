@@ -1,46 +1,27 @@
+// app/index.tsx
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import Login from './login';
+import SignUp from './signup';
 
 export default function Index() {
   const router = useRouter();
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Login</Text>
+  const onSuccess = () => {
+    // after either flow, send them into your tab navigator
+    router.push('/(tabs)/map');
+  };
 
-      <Pressable style={styles.button} onPress={() => router.push('/map')}>
-        <Text style={styles.buttonText}>Login</Text>
-      </Pressable>
-
-      <Pressable style={styles.secondaryButton} onPress={() => router.push('/signup')}>
-        <Text style={styles.buttonText}>Go to Sign Up</Text>
-      </Pressable>
-    </View>
+  return mode === 'login' ? (
+    <Login
+      onLogin={onSuccess}
+      onGoToSignUp={() => setMode('signup')}
+    />
+  ) : (
+    <SignUp
+      onSignUp={onSuccess}
+      onGoToLogin={() => setMode('login')}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  text: { fontSize: 24, marginBottom: 24 },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  secondaryButton: {
-    backgroundColor: '#34C759',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-});
-
-
-
-
