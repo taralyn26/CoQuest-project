@@ -1,6 +1,6 @@
 // app/(tabs)/quest-detail-library.tsx
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -15,9 +15,10 @@ export default function LibraryDetail() {
 
       <Text style={styles.title}>Library Cram Session</Text>
 
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageText}>📚 Library Image</Text>
-      </View>
+      <Image
+        source={require('../../assets/images/Stanford_University_Green_Library_Bing_Wing.jpg')}
+        style={styles.imageBox}
+      />
 
       <View style={styles.section}>
         <Text style={styles.host}>Hosted by You</Text>
@@ -54,15 +55,14 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF' },
   back: { padding: 16 },
   title: { fontSize: 22, fontWeight: '700', paddingHorizontal: 16 },
-  imagePlaceholder: {
+  imageBox: {
     height: 180,
     margin: 16,
-    backgroundColor: '#EEE',
-    justifyContent: 'center',
-    alignItems: 'center',
     borderRadius: 12,
+    width: '90%',
+    alignSelf: 'center',
+    resizeMode: 'cover',
   },
-  imageText: { fontSize: 16, color: '#666' },
   section: { paddingHorizontal: 16 },
   host: { fontWeight: '500', marginBottom: 4 },
   datetime: { fontSize: 14, marginBottom: 8 },

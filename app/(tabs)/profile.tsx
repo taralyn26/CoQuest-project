@@ -1,3 +1,4 @@
+// app/(tabs)/profile.tsx
 import {
   Dimensions,
   Image,
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import Badge from '../../components/Badge';
 import Quest from '../../components/Quest';
 
@@ -15,6 +17,8 @@ const hostAvatar = require('../../assets/images/pic.png');
 const hostBadgeImage = require('../../assets/images/host.png');
 
 export default function Profile() {
+  const router = useRouter();
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.header}>
@@ -33,14 +37,28 @@ export default function Profile() {
         <Text style={styles.arrow}>▼</Text>
       </TouchableOpacity>
 
+      <View style={styles.statRow}>
+        <View style={styles.statBox}>
+          <Text style={styles.statNumber}>42</Text>
+          <Text style={styles.statLabel}>Quests</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statNumber}>16</Text>
+          <Text style={styles.statLabel}>Groups</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statNumber}>5</Text>
+          <Text style={styles.statLabel}>Badges</Text>
+        </View>
+      </View>
 
       <Text style={styles.sectionTitle}>Recent Groups:</Text>
 
       <View style={styles.groupsContainer}>
-        {['group name', 'group name', 'group name'].map((group, index) => (
+        {['Study Buddies', 'party people', 'All Friends'].map((group, index) => (
           <TouchableOpacity key={index} style={styles.groupCard}>
             <View>
-              <Text style={styles.groupTitle}>group name</Text>
+              <Text style={styles.groupTitle}>{group}</Text>
               <Text style={styles.groupMembers}>
                 person1, person2, person3
               </Text>
@@ -50,7 +68,10 @@ export default function Profile() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.manageButton}>
+      <TouchableOpacity
+        style={styles.manageButton}
+        onPress={() => router.push('/manage-groups')}
+      >
         <Text style={styles.manageButtonText}>Manage Groups</Text>
       </TouchableOpacity>
 
@@ -114,6 +135,8 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 100,
     zIndex: 3,
+    borderWidth: 4,
+    borderColor: 'white',
   },
   title: {
     fontSize: 24,
@@ -145,6 +168,23 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 8,
     paddingHorizontal: 16,
+  },
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 16,
+  },
+  statBox: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: 'purple',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#333',
   },
   groupsContainer: {
     backgroundColor: 'white',
@@ -205,6 +245,5 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     borderRadius: 10,
   },
-  
 });
 
