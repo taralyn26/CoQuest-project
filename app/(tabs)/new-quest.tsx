@@ -1,6 +1,7 @@
 // app/(tabs)/new-quest.tsx
 
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Image,
@@ -17,6 +18,8 @@ import {
 const GROUPS = ['Study Buddies', 'Party People'];
 
 export default function NewQuest() {
+  const router = useRouter();
+
   const [quest, setQuest] = useState('');
   const [location, setLocation] = useState('');
   const [whenOption, setWhenOption] = useState<'now' | 'in30' | 'pickTime'>('now');
@@ -26,7 +29,7 @@ export default function NewQuest() {
   const [visibility, setVisibility] = useState('All Campus');
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const hostAvatar = require('../../assets/images/pic.png'); 
+  const hostAvatar = require('../../assets/images/pic.png');
   const hostName = 'Taralyn';
 
   const whenOptions = [
@@ -48,7 +51,7 @@ export default function NewQuest() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Back Button */}
-        <Pressable style={styles.back} onPress={() => { /* TODO */ }}>
+        <Pressable style={styles.back} onPress={() => router.push('/(tabs)/map')}>
           <Ionicons name="arrow-back" size={24} color={styles.header.color} />
         </Pressable>
 
@@ -233,6 +236,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     left: 16,
+    zIndex: 10,
   },
   header: {
     alignSelf: 'center',
@@ -417,4 +421,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
- 
