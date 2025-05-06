@@ -1,6 +1,6 @@
 // app/(tabs)/quest-detail-wilbur.tsx
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -15,9 +15,10 @@ export default function WilburDetail() {
 
       <Text style={styles.title}>Wilbur Dinner</Text>
 
-      <View style={styles.imageBox}>
-        <Text style={styles.imageText}>👨‍🍳 Dinner Image</Text>
-      </View>
+      <Image
+        source={require('../../assets/images/Wilbur-Dining-Hall.webp')}
+        style={styles.imageBox}
+      />
 
       <View style={styles.section}>
         <Text style={styles.datetime}>Wednesday April 30th • Now–8:00pm</Text>
@@ -56,12 +57,11 @@ const styles = StyleSheet.create({
   imageBox: {
     height: 180,
     margin: 16,
-    backgroundColor: '#EEE',
-    justifyContent: 'center',
-    alignItems: 'center',
     borderRadius: 12,
+    width: '90%',
+    alignSelf: 'center',
+    resizeMode: 'cover',
   },
-  imageText: { fontSize: 16, color: '#666' },
   section: { paddingHorizontal: 16 },
   datetime: { fontSize: 14, marginBottom: 8 },
   locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
