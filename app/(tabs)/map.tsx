@@ -1,43 +1,61 @@
-import { useNavigation, useRouter } from 'expo-router';
-import { useLayoutEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+// app/(tabs)/map.tsx
+import React from 'react';
+import { StyleSheet, View, Pressable, Text } from 'react-native';
+import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import { useRouter } from 'expo-router';
 
 export default function Map() {
   const router = useRouter();
-  const navigation = useNavigation();
 
-  // Remove back gesture + back button
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerBackVisible: false,
-      gestureEnabled: false,
-    });
-  }, [navigation]);
+  const stanfordRegion: Region = {
+    latitude: 37.4275,
+    longitude: -122.1697,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>🗺️ Map</Text>
+      <MapView
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
+        region={stanfordRegion}
+        showsUserLocation={true}
+        showsMyLocationButton={false} // 👈 Hides the default recenter button
+      />
 
-      <Pressable style={styles.button} onPress={() => router.replace('/')}>
-        <Text style={styles.buttonText}>Logout</Text>
+      {/* Custom Create Quest Button */}
+      <Pressable
+        style={styles.fab}
+        onPress={() => router.push('/(tabs)/new-quest')}
+      >
+        <Text style={styles.fabText}>+ Quest</Text>
       </Pressable>
     </View>
   );
 }
 
+const PURPLE = '#56018D';
+
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  text: { fontSize: 24, marginBottom: 24 },
-  button: {
-    backgroundColor: '#FF3B30',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+  container: { flex: 1 },
+  map: { flex: 1 },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    backgroundColor: PURPLE,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  buttonText: {
+  fabText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
   },
 });
-
-
