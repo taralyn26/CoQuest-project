@@ -48,7 +48,10 @@ export default function ManageGroups() {
         <Text style={styles.header}>Make / Manage Groups</Text>
       </View>
 
-      <TouchableOpacity style={styles.createButton}>
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={() => router.push('/create_group')}
+      >
         <Text style={styles.createText}>Create New Group</Text>
       </TouchableOpacity>
 

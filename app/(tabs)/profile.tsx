@@ -31,6 +31,8 @@ const mockGroups = [
   },
 ];
 
+
+
 export default function Profile() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
