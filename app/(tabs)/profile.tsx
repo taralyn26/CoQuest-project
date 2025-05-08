@@ -153,19 +153,43 @@ export default function Profile() {
       </TouchableOpacity>
 
       {/* HOSTED QUESTS */}
-      <Text style={styles.sectionTitle}>Hosted Quests:</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.questScroll}
-      >
-        {[...Array(3)].map((_, i) => (
-          <View key={i} style={styles.questCard}>
-            <Image source={badgeImage} style={{ width: 100, height: 100 }} />
-            <Text style={{ textAlign: 'center' }}>Mall run</Text>
-          </View>
-        ))}
-      </ScrollView>
+<Text style={styles.sectionTitle}>Hosted Quests:</Text>
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.questScroll}
+>
+  {[
+    {
+      id: '1',
+      title: 'Wilbur Dinner',
+      image: require('../../assets/images/Wilbur-Dining-Hall.webp'),
+      route: '/mockQuests/quest-detail-wilbur',
+    },
+    {
+      id: '2',
+      title: 'Library Cram Session',
+      image: require('../../assets/images/Stanford_University_Green_Library_Bing_Wing.jpg'),
+      route: '/mockQuests/quest-detail-library',
+    },
+    {
+      id: '3',
+      title: 'Mall Run',
+      image: require('../../assets/images/aritzia.png'),
+      route: '/mockQuests/quest-detail-mall',
+    },
+  ].map((quest) => (
+    <Pressable
+      key={quest.id}
+      onPress={() => router.push(quest.route)}
+      style={styles.questCard}
+    >
+      <Image source={quest.image} style={{ width: 120, height: 90, borderRadius: 10 }} />
+      <Text style={{ textAlign: 'center', marginTop: 4 }}>{quest.title}</Text>
+    </Pressable>
+  ))}
+</ScrollView>
+
 
       {/* BADGES */}
       <Text style={styles.sectionTitle}>My Badges:</Text>

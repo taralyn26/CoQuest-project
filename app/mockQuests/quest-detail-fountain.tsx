@@ -21,7 +21,7 @@ export default function FountainHopDetail() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.push('/(tabs)/quest-dashboard')}>
+        <Pressable onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </Pressable>
       </View>
