@@ -1,38 +1,24 @@
-// app/(tabs)/quest-dashboard.tsx
-import React from 'react';
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  FlatList,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import {
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import Quest from '../../components/Quest';
 
 const PURPLE = '#56018D';
 
 const mockQuests = [
-  {
-    id: '1',
-    title: 'Library Cram Session',
-    badge: 'Saturday 10:30am',
-    hostName: 'You',
-    location: '660 Stanford Shopping Center, Palo Alto',
-    route: '/mockQuests/quest-detail-library',
-    hosts: ['👩🏻‍🦰'],
-  },
-  {
-    id: '2',
-    title: 'Wilbur Dinner',
-    badge: 'Happening Now',
-    hostName: 'Wilbur crew',
-    location: 'Wilbur Dining',
-    route: '/mockQuests/quest-detail-wilbur',
-    hosts: ['🧑🏽', '👩🏼', '👨🏿‍🦱'],
-  },
+  { id: '1' },
+  { id: '2' },
+  { id: '3' },
+  { id: '4' },
 ];
 
 export default function QuestDashboard() {
@@ -49,7 +35,6 @@ export default function QuestDashboard() {
         </View>
       </View>
 
-      {/* Filter Bar */}
       <View style={styles.filterRow}>
         <Pressable style={styles.sortButton}>
           <Ionicons name="menu" size={16} />
@@ -65,26 +50,18 @@ export default function QuestDashboard() {
         </ScrollView>
       </View>
 
-      {/* Quest Grid */}
       <FlatList
         data={mockQuests}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         numColumns={2}
-        contentContainerStyle={styles.questGrid}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        columnWrapperStyle={styles.questRow}
         renderItem={({ item }) => (
-          <Pressable style={styles.card} onPress={() => router.push(item.route)}>
-            <View style={styles.badgeBox}>
-              <Text style={styles.badgeText}>{item.badge}</Text>
-            </View>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardSub}>Hosted by</Text>
-            <View style={styles.hosts}>
-              {item.hosts.map((h, i) => (
-                <Text key={i} style={styles.hostEmoji}>
-                  {h}
-                </Text>
-              ))}
-            </View>
+          <Pressable
+            style={styles.questWrapper}
+            onPress={() => router.push('/mockQuests/quest-detail-wilbur')}
+          >
+            <Quest />
           </Pressable>
         )}
       />
@@ -119,7 +96,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   filterRow: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     marginBottom: 12,
   },
   sortButton: {
@@ -142,48 +119,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  questGrid: {
-    paddingHorizontal: 12,
+  questRow: {
+    justifyContent: 'space-evenly',
+    marginBottom: 16,
   },
-  card: {
+  questWrapper: {
     flex: 1,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 12,
-    margin: 6,
-    maxWidth: '48%',
-    borderWidth: 1,
-    borderColor: '#DDD',
-  },
-  badgeBox: {
-    backgroundColor: PURPLE,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  cardSub: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-  },
-  hosts: {
-    flexDirection: 'row',
-    marginTop: 4,
-    gap: 6,
-  },
-  hostEmoji: {
-    fontSize: 18,
+    alignItems: 'center',
   },
 });
+
+
+
+
