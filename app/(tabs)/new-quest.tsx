@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Image,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -28,6 +29,7 @@ export default function NewQuest() {
   const [photoAdded, setPhotoAdded] = useState(false);
   const [visibility, setVisibility] = useState('All Campus');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const hostAvatar = require('../../assets/images/pic.png');
   const hostName = 'Taralyn';
@@ -38,7 +40,6 @@ export default function NewQuest() {
     { key: 'pickTime', label: 'Pick Time' },
   ];
 
-  // Generate 30-minute increments
   const times = Array.from({ length: 48 }).map((_, i) => {
     const hour = Math.floor(i / 2);
     const minute = i % 2 ? '30' : '00';
@@ -47,18 +48,19 @@ export default function NewQuest() {
     return `${displayHour}:${minute} ${ampm}`;
   });
 
+  const handleBroadcast = () => {
+    setModalVisible(true);
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Back Button */}
         <Pressable style={styles.back} onPress={() => router.push('/(tabs)/map')}>
           <Ionicons name="arrow-back" size={24} color={styles.header.color} />
         </Pressable>
 
-        {/* Header */}
         <Text style={styles.header}>New Quest</Text>
 
-        {/* Quest Input */}
         <Text style={styles.label}>What's your quest?</Text>
         <TextInput
           style={styles.input}
@@ -68,7 +70,6 @@ export default function NewQuest() {
           onChangeText={setQuest}
         />
 
-        {/* Location Input */}
         <Text style={styles.label}>Where</Text>
         <View style={styles.locationContainer}>
           <Ionicons name="location-sharp" size={20} color="#999" />
@@ -81,7 +82,6 @@ export default function NewQuest() {
           />
         </View>
 
-        {/* When Picker */}
         <Text style={styles.label}>When</Text>
         <View style={styles.whenContainer}>
           {whenOptions.map(opt => (
@@ -137,7 +137,6 @@ export default function NewQuest() {
           </View>
         )}
 
-        {/* Cover Photo */}
         <Text style={styles.label}>Add a cover photo (optional)</Text>
         <Pressable
           style={styles.photoPlaceholder}
@@ -150,7 +149,6 @@ export default function NewQuest() {
           )}
         </Pressable>
 
-        {/* Hosted By */}
         <Text style={styles.sectionTitle}>Hosted by</Text>
         <View style={styles.hostContainer}>
           <Image source={hostAvatar} style={styles.avatar} />
@@ -160,19 +158,13 @@ export default function NewQuest() {
           </Pressable>
         </View>
 
-        {/* Visibility Dropdown */}
         <Text style={styles.sectionTitle}>Who can see this</Text>
         <View>
           <Pressable
             style={styles.visibilityContainer}
             onPress={() => setDropdownOpen(!dropdownOpen)}
           >
-            <Ionicons
-              name="people-sharp"
-              size={20}
-              color="#333"
-              style={{ marginRight: 8 }}
-            />
+            <Ionicons name="people-sharp" size={20} color="#333" style={{ marginRight: 8 }} />
             <Text style={styles.visibilityText}>{visibility}</Text>
             <Ionicons
               name={dropdownOpen ? 'chevron-up' : 'chevron-down'}
@@ -211,33 +203,41 @@ export default function NewQuest() {
           )}
         </View>
 
-        {/* Broadcast Button */}
-        <Pressable style={styles.broadcastButton} onPress={() => { /* TODO */ }}>
+        <Pressable style={styles.broadcastButton} onPress={handleBroadcast}>
           <Text style={styles.broadcastText}>Broadcast My Quest!</Text>
         </Pressable>
       </ScrollView>
+
+      {/* Popup Modal */}
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>🎉 Congratulations!</Text>
+            <Text style={styles.modalSubtitle}>Your quest is posted</Text>
+            <Pressable
+              style={styles.modalButton}
+              onPress={() => {
+                setModalVisible(false);
+                router.push('/(tabs)/map');
+              }}
+            >
+              <Text style={styles.modalButtonText}>Okay</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
+// ⬇ styles unchanged except for modal addition
 const PURPLE = '#56018D';
 const LIGHTGRAY = '#F2F7FD';
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: LIGHTGRAY,
-  },
-  container: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  back: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    zIndex: 10,
-  },
+  safe: { flex: 1, backgroundColor: LIGHTGRAY },
+  container: { padding: 16, paddingBottom: 32 },
+  back: { position: 'absolute', top: 16, left: 16, zIndex: 10 },
   header: {
     alignSelf: 'center',
     marginTop: 16,
@@ -246,178 +246,95 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: PURPLE,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 8,
-    color: '#333',
-  },
+  label: { fontSize: 16, fontWeight: '500', marginBottom: 8, color: '#333' },
   input: {
-    height: 44,
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#DDD',
+    height: 44, backgroundColor: '#FFF', borderRadius: 8,
+    paddingHorizontal: 12, marginBottom: 16, borderWidth: 1, borderColor: '#DDD',
   },
   locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    marginBottom: 16,
-    paddingHorizontal: 12,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FFF', borderRadius: 8, borderWidth: 1, borderColor: '#DDD',
+    marginBottom: 16, paddingHorizontal: 12,
   },
-  locationInput: {
-    flex: 1,
-    height: 44,
-    color: '#333',
-  },
-  whenContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
+  locationInput: { flex: 1, height: 44, color: '#333' },
+  whenContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   whenButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    marginHorizontal: 4,
-    borderWidth: 1,
-    borderColor: '#DDD',
+    flex: 1, alignItems: 'center', paddingVertical: 12, backgroundColor: '#FFF',
+    borderRadius: 8, marginHorizontal: 4, borderWidth: 1, borderColor: '#DDD',
   },
-  whenButtonSelected: {
-    backgroundColor: PURPLE,
-    borderColor: PURPLE,
-  },
-  whenText: {
-    color: '#333',
-  },
-  whenTextSelected: {
-    color: '#FFF',
-  },
+  whenButtonSelected: { backgroundColor: PURPLE, borderColor: PURPLE },
+  whenText: { color: '#333' },
+  whenTextSelected: { color: '#FFF' },
   dropdownListLarge: {
-    maxHeight: 200,
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    marginBottom: 16,
+    maxHeight: 200, backgroundColor: '#FFF', borderRadius: 8,
+    borderWidth: 1, borderColor: '#DDD', marginBottom: 16,
   },
-  timeScroll: {
-    paddingHorizontal: 8,
-  },
+  timeScroll: { paddingHorizontal: 8 },
   dropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    paddingVertical: 10, paddingHorizontal: 16,
+    borderBottomWidth: 1, borderBottomColor: '#EEE',
   },
-  dropdownText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  selectedItem: {
-    backgroundColor: '#E8EAF6',
-  },
-  selectedText: {
-    color: PURPLE,
-    fontWeight: '600',
-  },
-  defaultText: {
-    fontWeight: '600',
-  },
+  dropdownText: { fontSize: 16, color: '#333' },
+  selectedItem: { backgroundColor: '#E8EAF6' },
+  selectedText: { color: PURPLE, fontWeight: '600' },
+  defaultText: { fontWeight: '600' },
   photoPlaceholder: {
-    width: '100%',
-    height: 220,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+    width: '100%', height: 220, backgroundColor: '#FFF',
+    borderRadius: 12, borderWidth: 1, borderColor: '#DDD',
+    justifyContent: 'center', alignItems: 'center', marginBottom: 16,
   },
-  photo: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
-    color: '#333',
-  },
+  photo: { width: '100%', height: '100%', borderRadius: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', marginTop: 16, marginBottom: 8, color: '#333' },
   hostContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#DDD',
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FFF', borderRadius: 8, padding: 12,
+    marginBottom: 16, borderWidth: 1, borderColor: '#DDD',
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  hostName: {
-    fontSize: 16,
-    flex: 1,
-    color: '#333',
-  },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
+  hostName: { fontSize: 16, flex: 1, color: '#333' },
   addHostsButton: {
-    borderWidth: 1,
-    borderColor: PURPLE,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    borderWidth: 1, borderColor: PURPLE, paddingHorizontal: 12,
+    paddingVertical: 6, borderRadius: 8,
   },
-  addHostsText: {
-    color: PURPLE,
-    fontWeight: '500',
-  },
+  addHostsText: { color: PURPLE, fontWeight: '500' },
   visibilityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    marginBottom: 4,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FFF', borderRadius: 8, padding: 12,
+    borderWidth: 1, borderColor: '#DDD', marginBottom: 4,
   },
-  visibilityText: {
-    fontSize: 16,
-    color: '#333',
-  },
+  visibilityText: { fontSize: 16, color: '#333' },
   dropdownList: {
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    marginBottom: 16,
+    backgroundColor: '#FFF', borderRadius: 8,
+    borderWidth: 1, borderColor: '#DDD', marginBottom: 16,
   },
   broadcastButton: {
-    backgroundColor: PURPLE,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
+    backgroundColor: PURPLE, paddingVertical: 14,
+    borderRadius: 8, alignItems: 'center', marginTop: 16,
   },
-  broadcastText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+  broadcastText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+
+  // 🔽 Modal styles
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: 'white', borderRadius: 12,
+    padding: 24, width: '80%', alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20, fontWeight: '700', color: PURPLE,
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 16, color: '#333', marginBottom: 16, textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: PURPLE, paddingVertical: 10,
+    paddingHorizontal: 20, borderRadius: 8,
+  },
+  modalButtonText: {
+    color: '#FFF', fontWeight: '600', fontSize: 16,
   },
 });
+
