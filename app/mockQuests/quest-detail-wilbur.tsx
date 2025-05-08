@@ -36,7 +36,7 @@ export default function WilburDetail() {
 
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Jad Bitar</Text>
-        <Text style={styles.datetime}>Wednesday April 30th • Now–8:00pm</Text>
+        <Text style={styles.datetime}>Thursday May 8th • 5:00pm</Text>
         <Text style={styles.description}>
           Wilbur dinner! (guys they have sesame chicken today!)
         </Text>

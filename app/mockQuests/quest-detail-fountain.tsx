@@ -35,7 +35,7 @@ export default function FountainHopDetail() {
 
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Isaias</Text>
-        <Text style={styles.datetime}>Friday, May 10 • 7:00pm – 8:30pm</Text>
+        <Text style={styles.datetime}>Thursday, May 8 • 7:00pm – 8:30pm</Text>
         <Text style={styles.description}>
           It’s warm, we’re bored, and we’ve got towels. Starting at the Claw and seeing how many we can hit. Bring flip-flops, your best chaos energy, and maybe a speaker?
         </Text>

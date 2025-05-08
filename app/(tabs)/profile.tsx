@@ -14,7 +14,11 @@ import {
 
 const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
-const badgeImage = require('../../assets/images/host.png'); // Use same image for now
+const badgeImage = require('../../assets/images/host.png');
+const badgeImage2 = require('../../assets/images/compass.jpg');
+const badgeImage3 = require('../../assets/images/adventure.webp');
+const badgeImage4 = require('../../assets/images/crown.png');
+const badgeImage5 = require('../../assets/images/questionmark.jpeg');
 
 // Badge data
 const badgeList = [
@@ -27,32 +31,32 @@ const badgeList = [
   {
     title: 'Connector',
     description: 'You’ve invited 5 friends to join quests!',
-    image: badgeImage,
+    image: badgeImage2,
     locked: false,
   },
   {
     title: 'Explorer',
     description: 'You’ve joined 10 different types of quests!',
-    image: badgeImage,
+    image: badgeImage3,
     locked: false,
   },
   {
     title: 'Legend',
     description: 'Host 10 quests to earn this badge.',
-    image: badgeImage,
+    image: badgeImage4,
     locked: false,
     progress: 0.65,
   },
   {
     title: 'Mystery',
     description: 'Complete 5 secret quests to unlock this badge.',
-    image: badgeImage,
+    image: badgeImage5,
     locked: true,
   },
   {
     title: 'Secret Quest',
     description: 'Find and complete a hidden quest on campus.',
-    image: badgeImage,
+    image: badgeImage5,
     locked: true,
   },
 ];
@@ -144,7 +148,6 @@ export default function Profile() {
           </View>
         ))}
       </View>
-
       <TouchableOpacity
         style={styles.manageButton}
         onPress={() => router.push('/manage-groups')}

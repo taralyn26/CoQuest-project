@@ -18,7 +18,7 @@ const mockQuests = [
   {
     id: '1',
     title: 'Wilbur Dinner',
-    time: 'Now–8:00pm',
+    time: '5:00pm',
     host: 'Jad Bitar',
     image: require('../../assets/images/Wilbur-Dining-Hall.webp'),
     route: '/mockQuests/quest-detail-wilbur',
@@ -26,7 +26,7 @@ const mockQuests = [
   {
     id: '2',
     title: 'Library Cram Session',
-    time: 'Saturday 10:30am',
+    time: 'Friday 10:30am',
     host: 'You',
     image: require('../../assets/images/Stanford_University_Green_Library_Bing_Wing.jpg'),
     route: '/mockQuests/quest-detail-library',
@@ -34,7 +34,7 @@ const mockQuests = [
   {
     id: '3',
     title: 'Mall Run',
-    time: 'Thursday 10:30am',
+    time: 'Friday 1:00pm',
     host: 'Aya',
     image: require('../../assets/images/aritzia.png'),
     route: '/mockQuests/quest-detail-mall',
@@ -42,7 +42,7 @@ const mockQuests = [
   {
     id: '4',
     title: 'Oval Chill',
-    time: 'Thursday 2:00pm',
+    time: 'Happening NOW',
     host: 'Isaias',
     image: require('../../assets/images/oval.jpg'),
     route: '/mockQuests/quest-detail-oval',
@@ -50,7 +50,7 @@ const mockQuests = [
   {
     id: '5',
     title: 'Fountain Hop 🌀',
-    time: 'Friday 7:00pm',
+    time: '7:00pm',
     host: 'Isaias',
     image: require('../../assets/images/fountain-hop.jpeg'),
     route: '/mockQuests/quest-detail-fountain',
@@ -58,7 +58,7 @@ const mockQuests = [
   {
     id: '6',
     title: 'Tennis Hitaround 🎾',
-    time: 'Sunday 4:00pm',
+    time: '6:00pm',
     host: 'Taralyn',
     image: require('../../assets/images/tennis.jpg'),
     route: '/mockQuests/quest-detail-tennis',
@@ -66,7 +66,7 @@ const mockQuests = [
   {
     id: '7',
     title: 'Pickup Soccer ⚽️',
-    time: 'Saturday 5:30pm',
+    time: 'Friday 12:30pm',
     host: 'Emi',
     image: require('../../assets/images/soccer.avif'),
     route: '/mockQuests/quest-detail-soccer',
@@ -74,7 +74,7 @@ const mockQuests = [
   {
     id: '8',
     title: 'S’mores & Chill 🔥',
-    time: 'Thursday 8:00pm',
+    time: '8:00pm',
     host: 'Aya',
     image: require('../../assets/images/smores.jpg'),
     route: '/mockQuests/quest-detail-smores',
@@ -83,10 +83,10 @@ const mockQuests = [
 
 // Define which quests belong to which filters
 const questTags = {
-  '1': ['All Quests', 'Happening Now'],
+  '1': ['All Quests'],
   '2': ['All Quests'],
   '3': ['All Quests'],
-  '4': ['All Quests'],
+  '4': ['All Quests', 'Happening Now'],
   '5': ['All Quests', 'Sports'],
   '6': ['All Quests', 'Sports'],
   '7': ['All Quests', 'Sports'],

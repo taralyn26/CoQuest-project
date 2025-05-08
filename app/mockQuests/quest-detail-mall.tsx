@@ -36,7 +36,7 @@ export default function MallDetail() {
 
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Aya</Text>
-        <Text style={styles.datetime}>Wednesday, April 30 • 10am – 12:00pm</Text>
+        <Text style={styles.datetime}>Friday, May 9 • 1pm – 4:00pm</Text>
         <Text style={styles.description}>
           I want to hit Aritzia and maybe grab some food at Joe & the Juice! I was planning on biking and leaving at 10:15 from the Oval!
         </Text>
