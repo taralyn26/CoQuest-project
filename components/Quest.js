@@ -16,7 +16,7 @@ export default function Quest() {
   const router = useRouter();
 
   return (
-    <Pressable onPress={() => router.push('/mockQuests/quest-detail-library')}>
+    <Pressable onPress={() => router.push('/mockQuests/quest-detail-mall')}>
       <View style={styles.card}>
         <View>
           <Image source={questImage} style={styles.image} />
