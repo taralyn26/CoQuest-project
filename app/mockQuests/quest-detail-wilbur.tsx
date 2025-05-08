@@ -112,4 +112,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F4F4',
     paddingHorizontal: 20,
     paddingVertical: 8,
-    borderRadius:
+    borderRadius: 999,
+    marginRight: 12,
+  },
+  bubbleText: { fontSize: 14, color: '#333' },
+});
