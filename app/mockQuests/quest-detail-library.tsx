@@ -1,3 +1,4 @@
+// app/(tabs)/quest-detail-library.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -21,13 +22,13 @@ export default function LibraryDetail() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* header with back arrow + Edit icon */}
       <View style={styles.header}>
         <Pressable onPress={() => router.push('/(tabs)/quest-dashboard')}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </Pressable>
-        {/* dummy edit menu for host */}
-        <Pressable>
-          <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+        <Pressable style={styles.editButton} onPress={() => {/* dummy */}}>
+          <Ionicons name="create-outline" size={20} color="#000" />
         </Pressable>
       </View>
 
@@ -44,7 +45,7 @@ export default function LibraryDetail() {
           Saturday, May 5 • 10:30am – 12:30pm
         </Text>
         <Text style={styles.description}>
-        I have my 229 midterm tomorrow, come study with me!
+          I have my 229 midterm tomorrow, come study with me!
         </Text>
         <View style={styles.locationRow}>
           <Ionicons name="location-sharp" size={16} color="#333" />
@@ -87,7 +88,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
+  },
+  editButton: {
+    padding: 2,
   },
   title: { fontSize: 22, fontWeight: '700', paddingHorizontal: 16 },
   image: {

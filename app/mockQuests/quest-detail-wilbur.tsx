@@ -54,7 +54,7 @@ export default function WilburDetail() {
           </Text>
         </Pressable>
 
-        <Text style={styles.subheader}>{totalMembers} members</Text>
+        <Text style={styles.subheader}>{totalMembers} Questers</Text>
         <View style={styles.bubbleRow}>
           {questers.map((name) => (
             <View key={name} style={styles.bubble}>
