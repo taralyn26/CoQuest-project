@@ -1,4 +1,3 @@
-// app/(tabs)/quest-detail-mall.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -11,12 +10,12 @@ import {
   View,
 } from 'react-native';
 
-export default function MallDetail() {
+export default function TennisQuestDetail() {
   const router = useRouter();
   const [going, setGoing] = useState(false);
 
-  const questers = ['You', 'Emi'];
-  const totalMembers = 5;
+  const questers = ['You', 'Aya'];
+  const totalMembers = 3;
   const extraCount = totalMembers - questers.length;
 
   return (
@@ -27,23 +26,23 @@ export default function MallDetail() {
         </Pressable>
       </View>
 
-      <Text style={styles.title}>Mall Run</Text>
+      <Text style={styles.title}>Tennis Hitaround 🎾</Text>
 
       <Image
-        source={require('../../assets/images/aritzia.png')}
+        source={require('../../assets/images/tennis.jpg')}
         style={styles.image}
       />
 
       <View style={styles.body}>
-        <Text style={styles.host}>Hosted by Aya</Text>
-        <Text style={styles.datetime}>Wednesday, April 30 • 10am – 12:00pm</Text>
+        <Text style={styles.host}>Hosted by Taralyn</Text>
+        <Text style={styles.datetime}>Sunday, May 12 • 4:00pm – 5:00pm</Text>
         <Text style={styles.description}>
-          I want to hit Aritzia and maybe grab some food at Joe & the Juice! I was planning on biking and leaving at 10:15 from the Oval!
+          Nothing serious—just bringing rackets and hitting some balls around. All levels welcome, come rally or just chill courtside!
         </Text>
 
         <View style={styles.locationRow}>
           <Ionicons name="location-sharp" size={16} color="#333" />
-          <Text style={styles.location}>660 Stanford Shopping Center, Palo Alto</Text>
+          <Text style={styles.location}>Arbuckle Tennis Courts, Stanford Campus</Text>
         </View>
 
         <Pressable
@@ -51,7 +50,7 @@ export default function MallDetail() {
           onPress={() => setGoing((g) => !g)}
         >
           <Text style={[styles.rsvpText, going && styles.goingText]}>
-            {going ? 'Going 🎉' : 'RSVP'}
+            {going ? 'Going 🎾' : 'RSVP'}
           </Text>
         </Pressable>
 

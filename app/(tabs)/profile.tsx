@@ -1,41 +1,72 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions,
   Image,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import Badge from '../../components/Badge';
-import Quest from '../../components/Quest';
 
 const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
-const hostBadgeImage = require('../../assets/images/host.png');
+const badgeImage = require('../../assets/images/host.png'); // Use same image for now
 
-const mockGroups = [
+// Badge data
+const badgeList = [
   {
-    name: 'Study Buddies',
-    members: ['Isaias', 'Jad', 'Aya'],
+    title: 'Host',
+    description: "You've hosted 3 quests!",
+    image: badgeImage,
+    locked: false,
   },
   {
-    name: 'party people',
-    members: ['Emi', 'Varsha', '+5'],
+    title: 'Connector',
+    description: 'You’ve invited 5 friends to join quests!',
+    image: badgeImage,
+    locked: false,
   },
   {
-    name: 'All Friends',
-    members: ['Nico', 'Yujina', '+50'],
+    title: 'Explorer',
+    description: 'You’ve joined 10 different types of quests!',
+    image: badgeImage,
+    locked: false,
+  },
+  {
+    title: 'Legend',
+    description: 'Host 10 quests to earn this badge.',
+    image: badgeImage,
+    locked: false,
+    progress: 0.65,
+  },
+  {
+    title: 'Mystery',
+    description: 'Complete 5 secret quests to unlock this badge.',
+    image: badgeImage,
+    locked: true,
+  },
+  {
+    title: 'Secret Quest',
+    description: 'Find and complete a hidden quest on campus.',
+    image: badgeImage,
+    locked: true,
   },
 ];
 
-
+const mockGroups = [
+  { name: 'Study Buddies', members: ['Isaias', 'Jad', 'Aya'] },
+  { name: 'party people', members: ['Emi', 'Varsha', '+5'] },
+  { name: 'All Friends', members: ['Nico', 'Yujina', '+50'] },
+];
 
 export default function Profile() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<any>(null);
 
   const toggleExpand = (name: string) => {
     setExpanded(expanded === name ? null : name);
@@ -43,6 +74,7 @@ export default function Profile() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.purpleBackground} />
         <View style={styles.curve} />
@@ -52,51 +84,37 @@ export default function Profile() {
       <Text style={styles.title}>Taralyn Nguyen</Text>
       <Text style={styles.user}>@taralyn</Text>
 
+      {/* COMMUNITY CARD */}
       <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-  <View style={styles.card}>
-    <TouchableOpacity
-      onPress={() => toggleExpand('Stanford Community')}
-      style={styles.cardHeader}
-    >
-      <View>
-        <Text style={styles.groupName}>Stanford Community 🌲</Text>
-        <Text style={styles.memberCount}>1902 members</Text>
-      </View>
-      <Text style={{ fontSize: 20 }}>
-        {expanded === 'Stanford Community' ? '▲' : '▼'}
-      </Text>
-    </TouchableOpacity>
-
-    {expanded === 'Stanford Community' && (
-      <View style={styles.cardBody}>
-        <View style={styles.memberRow}>
-          {['Aya', 'Isa', '+1900'].map((m, i) => (
-            <View key={i} style={styles.chip}>
-              <Text style={styles.chipText}>{m}</Text>
+        <View style={styles.card}>
+          <TouchableOpacity
+            onPress={() => toggleExpand('Stanford Community')}
+            style={styles.cardHeader}
+          >
+            <View>
+              <Text style={styles.groupName}>Stanford Community 🌲</Text>
+              <Text style={styles.memberCount}>1902 members</Text>
             </View>
-          ))}
+            <Text style={{ fontSize: 20 }}>
+              {expanded === 'Stanford Community' ? '▲' : '▼'}
+            </Text>
+          </TouchableOpacity>
+
+          {expanded === 'Stanford Community' && (
+            <View style={styles.cardBody}>
+              <View style={styles.memberRow}>
+                {['Aya', 'Isa', '+1900'].map((m, i) => (
+                  <View key={i} style={styles.chip}>
+                    <Text style={styles.chipText}>{m}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
       </View>
-    )}
-  </View>
-</View>
 
-
-      {/* <View style={styles.statRow}>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>42</Text>
-          <Text style={styles.statLabel}>Quests</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>16</Text>
-          <Text style={styles.statLabel}>Groups</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>5</Text>
-          <Text style={styles.statLabel}>Badges</Text>
-        </View>
-      </View> */}
-
+      {/* GROUPS */}
       <Text style={styles.sectionTitle}>Recent Groups:</Text>
       <View style={{ paddingHorizontal: 16 }}>
         {mockGroups.map((group, idx) => (
@@ -134,37 +152,71 @@ export default function Profile() {
         <Text style={styles.manageButtonText}>Manage Groups</Text>
       </TouchableOpacity>
 
+      {/* HOSTED QUESTS */}
       <Text style={styles.sectionTitle}>Hosted Quests:</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{ backgroundColor: 'white' }}
         contentContainerStyle={styles.questScroll}
       >
         {[...Array(3)].map((_, i) => (
-          <Quest key={i} />
+          <View key={i} style={styles.questCard}>
+            <Image source={badgeImage} style={{ width: 100, height: 100 }} />
+            <Text style={{ textAlign: 'center' }}>Mall run</Text>
+          </View>
         ))}
       </ScrollView>
 
+      {/* BADGES */}
       <Text style={styles.sectionTitle}>My Badges:</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{ backgroundColor: 'white' }}
         contentContainerStyle={styles.questScroll}
       >
-        {[...Array(3)].map((_, i) => (
-          <Badge key={i} title="Host" image={hostBadgeImage} />
+        {badgeList.map((badge, idx) => (
+          <TouchableOpacity key={idx} onPress={() => setSelectedBadge(badge)}>
+            <View style={[styles.badgeCard, badge.locked && styles.locked]}>
+              <Image source={badge.image} style={styles.badgeImage} />
+              <Text style={styles.badgeTitle}>{badge.title}</Text>
+              {badge.progress !== undefined && (
+                <View style={styles.progressBarBackground}>
+                  <View style={[styles.progressBarFill, { width: `${badge.progress * 100}%` }]} />
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {/* MODAL */}
+      <Modal
+        visible={!!selectedBadge}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedBadge(null)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContent}>
+            <Pressable style={styles.modalClose} onPress={() => setSelectedBadge(null)}>
+              <Text style={{ fontSize: 18 }}>✕</Text>
+            </Pressable>
+            {selectedBadge && (
+              <>
+                <Image source={selectedBadge.image} style={styles.modalImage} />
+                <Text style={styles.modalTitle}>{selectedBadge.title}</Text>
+                <Text style={styles.modalDescription}>{selectedBadge.description}</Text>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingBottom: 40,
-  },
+  scrollContainer: { paddingBottom: 40 },
   header: {
     position: 'relative',
     width: '100%',
@@ -210,43 +262,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: 'gray',
   },
-  communityCard: {
-    marginBottom: 12,
-    marginHorizontal: 16,
-    borderWidth: 1,
-    borderColor: 'black',
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  groupTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  arrow: {
-    fontSize: 18,
-    color: 'purple',
-    alignSelf: 'center',
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 16,
-  },
-  statBox: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: 'purple',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#333',
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -271,15 +286,85 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingLeft: 16,
   },
+  questCard: {
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  badgeCard: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 10,
+    marginRight: 12,
+    width: 100,
+    elevation: 2,
+  },
+  badgeImage: {
+    width: 50,
+    height: 50,
+    marginBottom: 6,
+    resizeMode: 'contain',
+  },
+  badgeTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  locked: {
+    opacity: 0.3,
+  },
+  progressBarBackground: {
+    marginTop: 6,
+    height: 4,
+    width: '100%',
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+  },
+  progressBarFill: {
+    height: 4,
+    backgroundColor: 'purple',
+    borderRadius: 2,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: 280,
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  modalClose: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+  },
+  modalImage: {
+    width: 70,
+    height: 70,
+    marginBottom: 12,
+    resizeMode: 'contain',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#555',
+    textAlign: 'center',
+  },
   card: {
     backgroundColor: '#F9F9F9',
     borderRadius: 12,
     marginBottom: 12,
     elevation: 2,
     padding: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -315,5 +400,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-
-
