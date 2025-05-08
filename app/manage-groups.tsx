@@ -42,7 +42,7 @@ export default function ManageGroups() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => router.push('../profile')}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </Pressable>
         <Text style={styles.header}>Make / Manage Groups</Text>
