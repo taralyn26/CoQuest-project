@@ -16,8 +16,6 @@ const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
 const badgeImage = require('../../assets/images/host.png');
 const badgeImage2 = require('../../assets/images/compass.jpg');
-const badgeImage3 = require('../../assets/images/adventure.webp');
-const badgeImage4 = require('../../assets/images/crown.png');
 const badgeImage5 = require('../../assets/images/questionmark.jpeg');
 
 // Badge data
@@ -37,13 +35,11 @@ const badgeList = [
   {
     title: 'Explorer',
     description: 'You’ve joined 10 different types of quests!',
-    image: badgeImage3,
     locked: false,
   },
   {
     title: 'Legend',
     description: 'Host 10 quests to earn this badge.',
-    image: badgeImage4,
     locked: false,
     progress: 0.65,
   },
