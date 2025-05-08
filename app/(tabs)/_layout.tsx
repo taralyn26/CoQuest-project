@@ -1,3 +1,4 @@
+// app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -5,6 +6,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
+        headerShown: false,
         tabBarActiveTintColor: '#56018D',
         tabBarInactiveTintColor: 'gray',
         tabBarIcon: ({ color, size }) => {
@@ -24,12 +26,6 @@ export default function TabLayout() {
           }
         },
       })}
-    >
-      <Tabs.Screen name="map" options={{ title: 'Map' }} />
-      <Tabs.Screen name="new-quest" options={{ title: 'New Quest' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
-      <Tabs.Screen name="quest-dashboard" options={{ title: 'Dashboard' }} />
-    </Tabs>
+    />
   );
 }
