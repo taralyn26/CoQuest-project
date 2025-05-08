@@ -1,17 +1,22 @@
-// app/manage-groups.tsx
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+const PURPLE = '#56018D';
 
 const mockGroups = [
+  {
+    name: 'Stanford Community 🌲',
+    members: ['Aya', 'Isa', '+1900'],
+  },
   {
     name: 'Study Buddies',
     members: ['Isaias', 'Jad', 'Aya'],
@@ -47,49 +52,43 @@ export default function ManageGroups() {
         <Text style={styles.createText}>Create New Group</Text>
       </TouchableOpacity>
 
-      {mockGroups.map((group, idx) => (
-        <View key={idx} style={styles.card}>
-          <TouchableOpacity
-            onPress={() => toggleExpand(group.name)}
-            style={styles.cardHeader}
-          >
-            <View>
-              <Text style={styles.groupName}>{group.name}</Text>
-              <Text style={styles.memberCount}>{group.members.length} members</Text>
-            </View>
-            <Ionicons
-              name={expanded === group.name ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color="black"
-            />
-          </TouchableOpacity>
+      {mockGroups.map((group, idx) => {
+        const isExpanded = expanded === group.name;
+        return (
+          <View key={idx} style={styles.card}>
+            <TouchableOpacity
+              onPress={() => toggleExpand(group.name)}
+              style={styles.cardHeader}
+            >
+              <View style={styles.titleRow}>
+                <Text style={styles.groupName}>{group.name}</Text>
+                {isExpanded && (
+                  <Pressable style={styles.editButton}>
+                    <Ionicons name="create-outline" size={18} color="black" />
+                  </Pressable>
+                )}
+              </View>
+              <Text style={styles.arrow}>{isExpanded ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
 
-          {expanded === group.name && (
-            <View style={styles.cardBody}>
-              <View style={styles.memberRow}>
-                {group.members.map((m, i) => (
-                  <View key={i} style={styles.chip}>
-                    <Text style={styles.chipText}>{m}</Text>
-                  </View>
-                ))}
+            {isExpanded && (
+              <View style={styles.cardBody}>
+                <Text style={styles.memberCount}>{group.members.length} members</Text>
+                <View style={styles.memberRow}>
+                  {group.members.map((m, i) => (
+                    <View key={i} style={styles.chip}>
+                      <Text style={styles.chipText}>{m}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
-              <View style={styles.actionsRow}>
-                <Pressable style={styles.iconButton}>
-                  <Ionicons name="add-circle-outline" size={20} color="black" />
-                </Pressable>
-                <Pressable style={styles.iconButton}>
-                  <Ionicons name="remove-circle-outline" size={20} color="black" />
-                </Pressable>
-              </View>
-            </View>
-          )}
-        </View>
-      ))}
+            )}
+          </View>
+        );
+      })}
     </ScrollView>
   );
 }
-
-const PURPLE = '#56018D';
 
 const styles = StyleSheet.create({
   container: {
@@ -124,25 +123,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     borderRadius: 12,
     marginBottom: 12,
-    elevation: 2,
     padding: 12,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 3,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   groupName: {
     fontSize: 16,
     fontWeight: '600',
   },
+  editButton: {
+    padding: 2,
+  },
+  arrow: {
+    fontSize: 20,
+  },
   memberCount: {
     fontSize: 12,
     color: '#666',
-    marginTop: 2,
+    marginTop: 6,
+    marginBottom: 6,
   },
   cardBody: {
     marginTop: 10,
@@ -163,11 +174,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
   },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  iconButton: {
-    padding: 4,
-  },
 });
+
+
+
+
+

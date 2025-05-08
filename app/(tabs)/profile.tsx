@@ -1,4 +1,5 @@
-// app/(tabs)/profile.tsx
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import Badge from '../../components/Badge';
 import Quest from '../../components/Quest';
 
@@ -16,8 +16,28 @@ const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
 const hostBadgeImage = require('../../assets/images/host.png');
 
+const mockGroups = [
+  {
+    name: 'Study Buddies',
+    members: ['Isaias', 'Jad', 'Aya'],
+  },
+  {
+    name: 'party people',
+    members: ['Emi', 'Varsha', '+5'],
+  },
+  {
+    name: 'All Friends',
+    members: ['Nico', 'Yujina', '+50'],
+  },
+];
+
 export default function Profile() {
   const router = useRouter();
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const toggleExpand = (name: string) => {
+    setExpanded(expanded === name ? null : name);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -30,14 +50,37 @@ export default function Profile() {
       <Text style={styles.title}>Taralyn Nguyen</Text>
       <Text style={styles.user}>@taralyn</Text>
 
-      <TouchableOpacity style={[styles.groupCard, styles.communityCard]}>
-        <View>
-          <Text style={styles.groupTitle}>Stanford Community 🌲</Text>
-        </View>
-        <Text style={styles.arrow}>▼</Text>
-      </TouchableOpacity>
+      <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+  <View style={styles.card}>
+    <TouchableOpacity
+      onPress={() => toggleExpand('Stanford Community')}
+      style={styles.cardHeader}
+    >
+      <View>
+        <Text style={styles.groupName}>Stanford Community 🌲</Text>
+        <Text style={styles.memberCount}>1902 members</Text>
+      </View>
+      <Text style={{ fontSize: 20 }}>
+        {expanded === 'Stanford Community' ? '▲' : '▼'}
+      </Text>
+    </TouchableOpacity>
 
-      <View style={styles.statRow}>
+    {expanded === 'Stanford Community' && (
+      <View style={styles.cardBody}>
+        <View style={styles.memberRow}>
+          {['Aya', 'Isa', '+1900'].map((m, i) => (
+            <View key={i} style={styles.chip}>
+              <Text style={styles.chipText}>{m}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    )}
+  </View>
+</View>
+
+
+      {/* <View style={styles.statRow}>
         <View style={styles.statBox}>
           <Text style={styles.statNumber}>42</Text>
           <Text style={styles.statLabel}>Quests</Text>
@@ -50,21 +93,35 @@ export default function Profile() {
           <Text style={styles.statNumber}>5</Text>
           <Text style={styles.statLabel}>Badges</Text>
         </View>
-      </View>
+      </View> */}
 
       <Text style={styles.sectionTitle}>Recent Groups:</Text>
+      <View style={{ paddingHorizontal: 16 }}>
+        {mockGroups.map((group, idx) => (
+          <View key={idx} style={styles.card}>
+            <TouchableOpacity
+              onPress={() => toggleExpand(group.name)}
+              style={styles.cardHeader}
+            >
+              <View>
+                <Text style={styles.groupName}>{group.name}</Text>
+                <Text style={styles.memberCount}>{group.members.length} members</Text>
+              </View>
+              <Text style={{ fontSize: 20 }}>{expanded === group.name ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
 
-      <View style={styles.groupsContainer}>
-        {['Study Buddies', 'party people', 'All Friends'].map((group, index) => (
-          <TouchableOpacity key={index} style={styles.groupCard}>
-            <View>
-              <Text style={styles.groupTitle}>{group}</Text>
-              <Text style={styles.groupMembers}>
-                person1, person2, person3
-              </Text>
-            </View>
-            <Text style={styles.arrow}>▼</Text>
-          </TouchableOpacity>
+            {expanded === group.name && (
+              <View style={styles.cardBody}>
+                <View style={styles.memberRow}>
+                  {group.members.map((m, i) => (
+                    <View key={i} style={styles.chip}>
+                      <Text style={styles.chipText}>{m}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
         ))}
       </View>
 
@@ -147,27 +204,29 @@ const styles = StyleSheet.create({
   user: {
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 4,
-    color: 'white',
+    marginVertical: 4,
+    marginBottom: 8,
+    color: 'gray',
   },
-  communityButton: {
-    marginTop: 16,
-    alignSelf: 'center',
-    backgroundColor: 'white',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
+  communityCard: {
+    marginBottom: 12,
+    marginHorizontal: 16,
     borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  communityText: {
-    fontSize: 16,
-  },
-  sectionTitle: {
+  groupTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 24,
-    marginBottom: 8,
-    paddingHorizontal: 16,
+  },
+  arrow: {
+    fontSize: 18,
+    color: 'purple',
+    alignSelf: 'center',
   },
   statRow: {
     flexDirection: 'row',
@@ -186,40 +245,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
   },
-  groupsContainer: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginHorizontal: 16,
-  },
-  groupCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 12,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    paddingHorizontal: 16,
-  },
-  groupTitle: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  groupMembers: {
-    fontSize: 12,
-    color: '#333',
-    marginTop: 2,
-  },
-  arrow: {
-    fontSize: 18,
-    color: 'purple',
-    alignSelf: 'center',
+    marginTop: 20,
+    marginBottom: 8,
+    paddingHorizontal: 16,
   },
   manageButton: {
     marginTop: 20,
@@ -238,12 +269,49 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingLeft: 16,
   },
-  communityCard: {
+  card: {
+    backgroundColor: '#F9F9F9',
+    borderRadius: 12,
     marginBottom: 12,
-    marginHorizontal: 16,
-    borderWidth: 1,
-    borderColor: 'black',
-    borderRadius: 10,
+    elevation: 2,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  groupName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  memberCount: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  cardBody: {
+    marginTop: 10,
+  },
+  memberRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  chip: {
+    backgroundColor: '#E0E0E0',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  chipText: {
+    fontSize: 12,
+    color: '#333',
   },
 });
+
 

@@ -1,23 +1,35 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
-const questImage = require('../assets/images/mall.png'); // updated path to match structure
+const questImage = require('../assets/images/mall.png'); // update if needed
 
 export default function Quest() {
+  const router = useRouter();
+
   return (
-    <View style={styles.card}>
-      <View>
-        <Image source={questImage} style={styles.image} />
-        <View style={styles.dateTag}>
-          <Text style={styles.dateText}>Thursday 10:30am</Text>
+    <Pressable onPress={() => router.push('/mockQuests/quest-detail-library')}>
+      <View style={styles.card}>
+        <View>
+          <Image source={questImage} style={styles.image} />
+          <View style={styles.dateTag}>
+            <Text style={styles.dateText}>Thursday 10:30am</Text>
+          </View>
+          <View style={styles.hostingTag}>
+            <Text style={styles.hostingText}>👑 hosting</Text>
+          </View>
         </View>
-        <View style={styles.hostingTag}>
-          <Text style={styles.hostingText}>👑 hosting</Text>
-        </View>
+        <Text style={styles.title}>Mall run</Text>
       </View>
-      <Text style={styles.title}>Mall run</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -63,4 +75,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
