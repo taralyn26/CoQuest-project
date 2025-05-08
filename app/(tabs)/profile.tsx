@@ -151,20 +151,56 @@ export default function Profile() {
         <Text style={styles.manageButtonText}>Manage Groups</Text>
       </TouchableOpacity>
 
+      
+    
       {/* HOSTED QUESTS */}
-      <Text style={styles.sectionTitle}>Hosted Quests:</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.questScroll}
-      >
-        {[...Array(3)].map((_, i) => (
-          <View key={i} style={styles.questCard}>
-            <Image source={badgeImage} style={{ width: 100, height: 100 }} />
-            <Text style={{ textAlign: 'center' }}>Mall run</Text>
+<Text style={styles.sectionTitle}>Hosted Quests:</Text>
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.questScroll}
+>
+  {[
+    
+    {
+      id: '1',
+      title: 'Library Cram Session',
+      time: 'Saturday 10:30am',
+      host: 'You',
+      image: require('../../assets/images/Stanford_University_Green_Library_Bing_Wing.jpg'),
+      route: '/mockQuests/quest-detail-library',
+    },
+  ].map((quest) => (
+    <Pressable
+      key={quest.id}
+      style={{ marginRight: 12 }}
+      onPress={() => router.push(quest.route)}
+    >
+      <View style={{ width: 160 }}>
+        <View style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', marginBottom: 6 }}>
+          <Image source={quest.image} style={{ width: 160, height: 120, resizeMode: 'cover' }} />
+          <View
+            style={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              backgroundColor: '#3366FF',
+              borderRadius: 4,
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+            }}
+          >
+            <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '600' }}>{quest.time}</Text>
           </View>
-        ))}
-      </ScrollView>
+        </View>
+        <Text style={{ fontWeight: '600', fontSize: 16 }}>{quest.title}</Text>
+        <Text style={{ fontSize: 12, color: '#888' }}>👑 {quest.host} hosting</Text>
+      </View>
+    </Pressable>
+  ))}
+</ScrollView>
+
+
 
       {/* BADGES */}
       <Text style={styles.sectionTitle}>My Badges:</Text>
@@ -225,7 +261,7 @@ const styles = StyleSheet.create({
   },
   purpleBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'purple',
+    backgroundColor: '#56018D',
     zIndex: 1,
   },
   curve: {
@@ -271,7 +307,7 @@ const styles = StyleSheet.create({
   manageButton: {
     marginTop: 20,
     alignSelf: 'center',
-    backgroundColor: 'purple',
+    backgroundColor: '#56018D',
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 999,
@@ -321,7 +357,7 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: 4,
-    backgroundColor: 'purple',
+    backgroundColor: '#56018D',
     borderRadius: 2,
   },
   modalBackdrop: {
