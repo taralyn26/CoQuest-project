@@ -1,61 +1,96 @@
-// app/(tabs)/quest-detail-library.tsx
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Image,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 export default function LibraryDetail() {
   const router = useRouter();
+  const [going, setGoing] = useState(true);
+
+  // replace with your real names
+  const questers = ['Emi', 'Varsha'];
+  const totalMembers = 7;
+  const extraCount = totalMembers - questers.length;
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Pressable style={styles.back} onPress={() => router.push('/(tabs)/quest-dashboard')}>
-        <Ionicons name="arrow-back" size={24} color="#000" />
-      </Pressable>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.push('/(tabs)/quest-dashboard')}>
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
+        {/* dummy edit menu for host */}
+        <Pressable>
+          <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+        </Pressable>
+      </View>
 
       <Text style={styles.title}>Library Cram Session</Text>
 
       <Image
         source={require('../../assets/images/Stanford_University_Green_Library_Bing_Wing.jpg')}
-        style={styles.imageBox}
+        style={styles.image}
       />
 
-      <View style={styles.section}>
+      <View style={styles.body}>
         <Text style={styles.host}>Hosted by You</Text>
-        <Text style={styles.datetime}>Saturday, May 5 • 10:30am - 12:30pm</Text>
-        <Text style={styles.description}>
-          I want to hit Aritzia and maybe grab some food at Joe & the Juice! I was planning on biking and leaving at 10:15 from the Oval!
+        <Text style={styles.datetime}>
+          Saturday, May 5 • 10:30am – 12:30pm
         </Text>
-
+        <Text style={styles.description}>
+          I have my 229 midterm tomorrow, come study with me!
+        </Text>
         <View style={styles.locationRow}>
           <Ionicons name="location-sharp" size={16} color="#333" />
-          <Text style={styles.location}>660 Stanford Shopping Center, Palo Alto</Text>
+          <Text style={styles.location}>
+            660 Stanford Shopping Center, Palo Alto
+          </Text>
         </View>
-      </View>
 
-      <View style={styles.buttonGroup}>
-        <Pressable style={styles.button}>
-          <Ionicons name="create-outline" size={16} color="#000" />
-          <Text style={styles.buttonText}>Edit Quest</Text>
+        <Pressable
+          style={[styles.rsvpButton, going && styles.going]}
+          onPress={() => setGoing((g) => !g)}
+        >
+          <Text style={[styles.rsvpText, going && styles.goingText]}>
+            {going ? 'Going 🎉' : 'RSVP'}
+          </Text>
         </Pressable>
-        <Pressable style={styles.button}>
-          <Ionicons name="megaphone-outline" size={16} color="#000" />
-          <Text style={styles.buttonText}>Make Announcement</Text>
-        </Pressable>
-        <Pressable style={styles.button}>
-          <Ionicons name="people-outline" size={16} color="#000" />
-          <Text style={styles.buttonText}>View Participants</Text>
-        </Pressable>
+
+        <Text style={styles.subheader}>{totalMembers} members</Text>
+        <View style={styles.bubbleRow}>
+          {questers.map((name) => (
+            <View key={name} style={styles.bubble}>
+              <Text style={styles.bubbleText}>{name}</Text>
+            </View>
+          ))}
+          {extraCount > 0 && (
+            <View style={styles.bubble}>
+              <Text style={styles.bubbleText}>+{extraCount}</Text>
+            </View>
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
+const PURPLE = '#56018D';
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF' },
-  back: { padding: 16 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
   title: { fontSize: 22, fontWeight: '700', paddingHorizontal: 16 },
-  imageBox: {
+  image: {
     height: 180,
     margin: 16,
     borderRadius: 12,
@@ -63,20 +98,31 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     resizeMode: 'cover',
   },
-  section: { paddingHorizontal: 16 },
+  body: { paddingHorizontal: 16 },
   host: { fontWeight: '500', marginBottom: 4 },
   datetime: { fontSize: 14, marginBottom: 8 },
   description: { fontSize: 14, marginBottom: 12 },
-  locationRow: { flexDirection: 'row', alignItems: 'center' },
+  locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   location: { marginLeft: 4, color: '#333' },
-  buttonGroup: { marginTop: 24, paddingHorizontal: 16 },
-  button: {
-    flexDirection: 'row',
-    backgroundColor: '#F4F4F4',
-    padding: 12,
+  rsvpButton: {
+    borderWidth: 1,
+    borderColor: PURPLE,
     borderRadius: 8,
+    paddingVertical: 10,
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
-  buttonText: { marginLeft: 8, fontWeight: '500' },
+  going: { backgroundColor: PURPLE },
+  rsvpText: { color: PURPLE, fontWeight: '600' },
+  goingText: { color: '#FFF' },
+  subheader: { fontSize: 14, color: '#888', marginBottom: 8 },
+  bubbleRow: { flexDirection: 'row', alignItems: 'center' },
+  bubble: {
+    backgroundColor: '#F4F4F4',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 999,
+    marginRight: 12,
+  },
+  bubbleText: { fontSize: 14, color: '#333' },
 });
