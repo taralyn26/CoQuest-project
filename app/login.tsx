@@ -1,12 +1,12 @@
 // app/login.tsx
 import React, { useState } from 'react';
 import {
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 
 interface Props {
@@ -58,6 +58,7 @@ export default function Login({ onLogin, onGoToSignUp }: Props) {
   );
 }
 
+const FONT_FAMILY = 'System';  // ← change to your chosen font if needed
 const PURPLE = '#56018D';
 const DARK = '#212121';
 
@@ -68,9 +69,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
   },
-  appTitle: { color: 'white', fontSize: 36, fontWeight: 'bold', marginTop: 24 },
-  appSubtitle: { color: 'white', fontSize: 18, marginBottom: 32 },
+  appTitle: {
+    fontFamily: FONT_FAMILY,
+    color: 'white',
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginTop: 24,
+  },
+  appSubtitle: {
+    fontFamily: FONT_FAMILY,
+    color: 'white',
+    fontSize: 18,
+    marginBottom: 32,
+  },
   screenTitle: {
+    fontFamily: FONT_FAMILY,
     color: 'white',
     fontSize: 28,
     fontWeight: '600',
@@ -80,7 +93,6 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: 'white',
-    width: '100%',
     width: '90%',
     maxWidth: 400,
     borderRadius: 12,
@@ -89,8 +101,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
+    alignSelf: 'center',
   },
-  label: { fontSize: 16, marginBottom: 4, color: '#333' },
+  label: {
+    fontFamily: FONT_FAMILY,
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#333',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#DDD',
@@ -106,6 +124,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  primaryButtonText: { color: 'white', fontSize: 16, fontWeight: '500' },
-  link: { color: '#007AFF', textDecorationLine: 'underline', marginTop: 4 },
+  primaryButtonText: {
+    fontFamily: FONT_FAMILY,
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  link: {
+    fontFamily: FONT_FAMILY,
+    color: '#007AFF',
+    textDecorationLine: 'underline',
+    marginTop: 4,
+  },
 });

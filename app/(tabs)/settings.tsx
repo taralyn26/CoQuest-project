@@ -1,15 +1,14 @@
 // app/(tabs)/settings.tsx
-import React from 'react';
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text
+} from 'react-native';
 
 export default function Settings() {
   const router = useRouter();
@@ -47,10 +46,18 @@ export default function Settings() {
           <Ionicons name="document-text-outline" size={20} color="#333" />
           <Text style={styles.label}>Terms of Service</Text>
         </Pressable>
-        <Pressable style={styles.row}>
-          <Ionicons name="exit-outline" size={20} color="#333" />
+
+        <Pressable
+          style={styles.row}
+          onPress={() => {
+            // go back to "/" (your Index login/signup flow)
+            router.replace('/');
+          }}
+        >
+          <Ionicons name="exit-outline" size={20} color="#D00" />
           <Text style={[styles.label, { color: '#D00' }]}>Log Out</Text>
         </Pressable>
+
       </ScrollView>
     </SafeAreaView>
   );
