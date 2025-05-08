@@ -35,7 +35,7 @@ export default function TennisQuestDetail() {
 
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Taralyn</Text>
-        <Text style={styles.datetime}>Sunday, May 12 • 4:00pm – 5:00pm</Text>
+        <Text style={styles.datetime}>Thursday, May 8 • 6:00pm – 8:00pm</Text>
         <Text style={styles.description}>
           Nothing serious—just bringing rackets and hitting some balls around. All levels welcome, come rally or just chill courtside!
         </Text>

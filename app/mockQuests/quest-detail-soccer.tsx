@@ -35,7 +35,7 @@ export default function SoccerQuestDetail() {
 
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Emi</Text>
-        <Text style={styles.datetime}>Saturday, May 11 • 5:30pm – 7:00pm</Text>
+        <Text style={styles.datetime}>Friday, May 9 • 12:30pm – 2:00pm</Text>
         <Text style={styles.description}>
           Super chill pickup game on Roble Field. Come run around or just kick for fun—no pressure! We’ve got a ball and some cones. Just bring yourself and maybe water.
         </Text>

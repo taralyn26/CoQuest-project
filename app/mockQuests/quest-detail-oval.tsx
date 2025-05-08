@@ -35,7 +35,7 @@ export default function OvalChillDetail() {
 
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Jad</Text>
-        <Text style={styles.datetime}>Tuesday, May 7 • 3:30pm – 5:00pm</Text>
+        <Text style={styles.datetime}>Thursday, May 8 • 2:00pm – 5:00pm</Text>
         <Text style={styles.description}>
           Just bringing a blanket and catching some rays by the Oval 🌞 Bring snacks, a book, or just vibes. I’ll be under the big tree near the bike racks!
         </Text>

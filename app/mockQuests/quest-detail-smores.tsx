@@ -35,7 +35,7 @@ export default function SmoresQuestDetail() {
 
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Aya</Text>
-        <Text style={styles.datetime}>Thursday, May 9 • 8:00pm – 9:30pm</Text>
+        <Text style={styles.datetime}>Thursday, May 8 • 8:00pm – 9:30pm</Text>
         <Text style={styles.description}>
           Bringing marshmallows, chocolate, and grahams to the EVGR B fireplace! Come hang, roast a few, and vibe by the flames. Extra sticks provided 🔥
         </Text>

@@ -42,7 +42,7 @@ export default function LibraryDetail() {
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by You</Text>
         <Text style={styles.datetime}>
-          Saturday, May 5 • 10:30am – 12:30pm
+          Friday, May 9 • 10:30am – 12:30pm
         </Text>
         <Text style={styles.description}>
           I have my 229 midterm tomorrow, come study with me!
