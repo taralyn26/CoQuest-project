@@ -35,12 +35,12 @@ export default function Quest() {
 
 const styles = StyleSheet.create({
   card: {
-    width: 120,
+    width: 160,
     marginRight: 12,
   },
   image: {
-    width: 120,
-    height: 120,
+    width: 160,
+    height: 160,
     borderRadius: 12,
   },
   dateTag: {
@@ -71,9 +71,10 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: 6,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
+
 
 
