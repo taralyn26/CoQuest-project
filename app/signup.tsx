@@ -1,12 +1,12 @@
 // app/signup.tsx
 import React, { useState } from 'react';
 import {
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 
 interface Props {
@@ -14,19 +14,39 @@ interface Props {
   onGoToLogin: () => void;
 }
 
+import { AuthError, signUp } from './firebase';
+
 export default function SignUp({ onSignUp, onGoToLogin }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSignUp = async () => {
+    try {
+      if (password !== confirm) {
+        setError('Passwords do not match');
+        return;
+      }
+      
+      await signUp(email, password);
+      onSignUp();
+    } catch (error) {
+      const authError = error as AuthError;
+      setError(authError.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.appTitle}>CoQuest</Text>
       <Text style={styles.appSubtitle}>enjoy some spontaneity!</Text>
 
-      <Text style={styles.screenTitle}>  Sign Up</Text>
+      <Text style={styles.screenTitle}>Sign Up</Text>
 
       <View style={styles.card}>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
@@ -35,6 +55,7 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          autoCapitalize="none"
         />
 
         <Text style={styles.label}>Password</Text>
@@ -57,7 +78,7 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
           onChangeText={setConfirm}
         />
 
-        <Pressable style={styles.primaryButton} onPress={onSignUp}>
+        <Pressable style={styles.primaryButton} onPress={handleSignUp}>
           <Text style={styles.primaryButtonText}>Sign Up</Text>
         </Pressable>
 
@@ -146,5 +167,10 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     textDecorationLine: 'underline',
     marginTop: 4,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });

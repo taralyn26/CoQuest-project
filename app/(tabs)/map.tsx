@@ -1,16 +1,40 @@
 // app/(tabs)/map.tsx
-import React, { useState, useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  Pressable,
-  Text,
-  Image,
-  Animated,
-} from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Marker, Region } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React, { useRef, useState } from 'react';
+import {
+    Animated,
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+
+import { useEffect } from 'react';
+import { subscribeToNearbyQuests } from '../services/questService';
+
+export default function QuestDashboard() {
+  const [quests, setQuests] = useState<any[]>([])
+
+  useEffect(() => {
+    const unsubscribe = subscribeToNearbyQuests(
+      5,
+      setQuests
+    )
+    return unsubscribe
+  }, [])
+
+  return (
+    <ScrollView>
+      {quests.map(q => (
+        <Quest key={q.id} data={q} />
+      ))}
+    </ScrollView>
+  )
+}
+
 
 export default function Map() {
   const router = useRouter();
@@ -62,57 +86,57 @@ export default function Map() {
     },
     {
       id: '4',
-      title: 'Oval Chill',
+      title: "Oval Chill",
       coordinate: { latitude: 37.43033428584338, longitude: -122.16938113218649 },
       route: '/mockQuests/quest-detail-oval',
       image: require('../../assets/images/oval.jpg'), // Replace with actual asset path
-      description: 'Chilling on the Oval with a blanket, snacks, and music. Come vibe, play frisbee, or just hang out in the sun!',
-      time: 'Thursday, May 8 • 2:00pm – 4:00pm',
-      host: 'Isaias',
+      description: "Chilling on the Oval with a blanket, snacks, and music. Come vibe, play frisbee, or just hang out in the sun!",
+      time: "Thursday, May 8 • 2:00pm – 4:00pm",
+      host: "Isaias",
       happeningNow: true,
     },
     {
       id: '5',
-      title: 'Fountain Hop 🌀',
+      title: "Fountain Hop 🌀",
       coordinate: { latitude: 37.42611799496791, longitude: -122.17337613033567 },
       route: '/mockQuests/quest-detail-fountain',
       image: require('../../assets/images/fountain-hop.jpeg'),
-      description: 'It’s warm, we’re bored, and we’ve got towels. Starting at the Claw and seeing how many we can hit. Bring flip-flops, your best chaos energy, and maybe a speaker?',
-      time: 'Thursday, May 8 • 7:00pm – 8:30pm',
-      host: 'Isaias',
+      description: "It's warm, we're bored, and we've got towels. Starting at the Claw and seeing how many we can hit. Bring flip-flops, your best chaos energy, and maybe a speaker?",
+      time: "Thursday, May 8 • 7:00pm – 8:30pm",
+      host: "Isaias",
       happeningNow: false,
     },
     {
       id: '6',
-      title: 'Tennis Hitaround 🎾',
+      title: "Tennis Hitaround 🎾",
       coordinate: { latitude: 37.42546996347623, longitude: -122.18266330753647 },
       route: '/mockQuests/quest-detail-tennis',
       image: require('../../assets/images/tennis.jpg'),
-      description: 'Nothing serious—just bringing rackets and hitting some balls around. All levels welcome, come rally or just chill courtside!',
-      time: 'Thursday, May 8 • 6:00pm – 8:00pm',
-      host: 'Taralyn',
+      description: "Nothing serious—just bringing rackets and hitting some balls around. All levels welcome, come rally or just chill courtside!",
+      time: "Thursday, May 8 • 6:00pm – 8:00pm",
+      host: "Taralyn",
       happeningNow: false,
     },
     {
       id: '7',
-      title: 'Pickup Soccer ⚽️',
+      title: "Pickup Soccer ⚽️",
       coordinate: { latitude: 37.426375105086144, longitude: -122.17578990940434 }, // Approx. Roble Field, Stanford
       route: '/mockQuests/quest-detail-soccer',
       image: require('../../assets/images/soccer.avif'),
-      description: 'Super chill pickup game on Roble Field. Come run around or just kick for fun—no pressure! We’ve got a ball and some cones. Just bring yourself and maybe water.',
-      time: 'Friday, May 9 • 12:30pm – 2:00pm',
-      host: 'Emi',
+      description: "Super chill pickup game on Roble Field. Come run around or just kick for fun—no pressure! We've got a ball and some cones. Just bring yourself and maybe water.",
+      time: "Friday, May 9 • 12:30pm – 2:00pm",
+      host: "Emi",
       happeningNow: false,
     },
     {
       id: '8',
-      title: 'S’mores & Chill 🔥',
+      title: "S'mores & Chill 🔥",
       coordinate: { latitude: 37.42626383533444, longitude: -122.15724181475235 },
       route: '/mockQuests/quest-detail-smores',
       image: require('../../assets/images/smores.jpg'),
-      description: 'Bringing marshmallows, chocolate, and grahams to the EVGR B fireplace! Come hang, roast a few, and vibe by the flames. Extra sticks provided 🔥',
-      time: 'Thursday, May 8 • 8:00pm – 9:30pm',
-      host: 'Aya',
+      description: "Bringing marshmallows, chocolate, and grahams to the EVGR B fireplace! Come hang, roast a few, and vibe by the flames. Extra sticks provided 🔥",
+      time: "Thursday, May 8 • 8:00pm – 9:30pm",
+      host: "Aya",
       happeningNow: false,
     },    
     
@@ -208,7 +232,6 @@ export default function Map() {
   );
 }
 
-const PURPLE = '#56018D';
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
