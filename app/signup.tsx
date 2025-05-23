@@ -16,26 +16,26 @@ interface Props {
 
 import { AuthError, signUp } from './firebase';
 
-export default function SignUp({ onSignUp, onGoToLogin }: Props) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState('');
+// export default function SignUp({ onSignUp, onGoToLogin }: Props) {
+//   const [email, setEmail] = useState('');
+//   const [password, setPassword] = useState('');
+//   const [confirm, setConfirm] = useState('');
+//   const [error, setError] = useState('');
 
-  const handleSignUp = async () => {
-    try {
-      if (password !== confirm) {
-        setError('Passwords do not match');
-        return;
-      }
+//   const handleSignUp = async () => {
+//     try {
+//       if (password !== confirm) {
+//         setError('Passwords do not match');
+//         return;
+//       }
       
-      await signUp(email, password);
-      onSignUp();
-    } catch (error) {
-      const authError = error as AuthError;
-      setError(authError.message);
-    }
-  };
+//       await signUp(email, password);
+//       onSignUp();
+//     } catch (error) {
+//       const authError = error as AuthError;
+//       setError(authError.message);
+//     }
+//   };
 
   return (
     <SafeAreaView style={styles.container}>

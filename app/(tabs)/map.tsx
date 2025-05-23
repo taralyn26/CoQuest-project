@@ -3,37 +3,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    Animated,
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Animated,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
-import { useEffect } from 'react';
-import { subscribeToNearbyQuests } from '../services/questService';
 
-export default function QuestDashboard() {
-  const [quests, setQuests] = useState<any[]>([])
+// export default function QuestDashboard() {
+//   const [quests, setQuests] = useState<any[]>([])
 
-  useEffect(() => {
-    const unsubscribe = subscribeToNearbyQuests(
-      5,
-      setQuests
-    )
-    return unsubscribe
-  }, [])
+//   useEffect(() => {
+//     const unsubscribe = subscribeToNearbyQuests(
+//       5,
+//       setQuests
+//     )
+//     return unsubscribe
+//   }, [])
 
-  return (
-    <ScrollView>
-      {quests.map(q => (
-        <Quest key={q.id} data={q} />
-      ))}
-    </ScrollView>
-  )
-}
+//   return (
+//     <ScrollView>
+//       {quests.map(q => (
+//         <Quest key={q.id} data={q} />
+//       ))}
+//     </ScrollView>
+//   )
+// }
 
 
 export default function Map() {
