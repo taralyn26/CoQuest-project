@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   FlatList,
-  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -11,88 +10,9 @@ import {
   Text,
   View,
 } from 'react-native';
+import Quest from '../../components/Quest';
 
 const PURPLE = '#56018D';
-
-const mockQuests = [
-  {
-    id: '1',
-    title: 'Wilbur Dinner',
-    time: '5:00pm',
-    host: 'Jad Bitar',
-    image: require('../../assets/images/Wilbur-Dining-Hall.webp'),
-    route: '/mockQuests/quest-detail-wilbur',
-  },
-  {
-    id: '2',
-    title: 'Library Cram Session',
-    time: 'Friday 10:30am',
-    host: 'You',
-    image: require('../../assets/images/Stanford_University_Green_Library_Bing_Wing.jpg'),
-    route: '/mockQuests/quest-detail-library',
-  },
-  {
-    id: '3',
-    title: 'Mall Run',
-    time: 'Friday 1:00pm',
-    host: 'Aya',
-    image: require('../../assets/images/aritzia.png'),
-    route: '/mockQuests/quest-detail-mall',
-  },
-  {
-    id: '4',
-    title: 'Oval Chill',
-    time: 'Happening NOW',
-    host: 'Isaias',
-    image: require('../../assets/images/oval.jpg'),
-    route: '/mockQuests/quest-detail-oval',
-  },
-  {
-    id: '5',
-    title: 'Fountain Hop 🌀',
-    time: '7:00pm',
-    host: 'Isaias',
-    image: require('../../assets/images/fountain-hop.jpeg'),
-    route: '/mockQuests/quest-detail-fountain',
-  },
-  {
-    id: '6',
-    title: 'Tennis Hitaround 🎾',
-    time: '6:00pm',
-    host: 'Taralyn',
-    image: require('../../assets/images/tennis.jpg'),
-    route: '/mockQuests/quest-detail-tennis',
-  },
-  {
-    id: '7',
-    title: 'Pickup Soccer ⚽️',
-    time: 'Friday 12:30pm',
-    host: 'Emi',
-    image: require('../../assets/images/soccer.avif'),
-    route: '/mockQuests/quest-detail-soccer',
-  },
-  {
-    id: '8',
-    title: 'S’mores & Chill 🔥',
-    time: '8:00pm',
-    host: 'Aya',
-    image: require('../../assets/images/smores.jpg'),
-    route: '/mockQuests/quest-detail-smores',
-  },
-];
-
-// Define which quests belong to which filters
-const questTags = {
-  '1': ['All Quests'],
-  '2': ['All Quests'],
-  '3': ['All Quests'],
-  '4': ['All Quests', 'Happening Now'],
-  '5': ['All Quests', 'Sports'],
-  '6': ['All Quests', 'Sports'],
-  '7': ['All Quests', 'Sports'],
-  '8': ['All Quests'],
-};
-
 const availableFilters = ['All Quests', 'Happening Now', 'Sports', 'Within 1 mile'];
 
 export default function QuestDashboard() {
@@ -107,20 +27,12 @@ export default function QuestDashboard() {
     );
   };
 
-  const filteredQuests = useMemo(() => {
-    if (selectedFilters.includes('All Quests')) return mockQuests;
-    return mockQuests.filter((quest) =>
-      selectedFilters.every((filter) => questTags[quest.id]?.includes(filter))
-    );
-  }, [selectedFilters]);
-
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <Text style={styles.avatar}>👤</Text>
         <Text style={styles.title}>Quest Dashboard</Text>
-        <View style={styles.iconGroup}>
-        </View>
+        <View style={styles.iconGroup}></View>
       </View>
 
       <View style={styles.filterRow}>
@@ -151,28 +63,12 @@ export default function QuestDashboard() {
       </View>
 
       <FlatList
-        data={filteredQuests}
-        keyExtractor={(item) => item.id}
+        data={Array(8).fill(null)} // Render 8 quest components
+        keyExtractor={(_, index) => index.toString()}
         numColumns={2}
-        contentContainerStyle={{ paddingBottom: 40 }}
         columnWrapperStyle={styles.questRow}
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.questWrapper}
-            onPress={() => router.push(item.route)}
-          >
-            <View style={styles.card}>
-              <View style={styles.imageContainer}>
-                <Image source={item.image} style={styles.image} />
-                <View style={styles.timeTag}>
-                  <Text style={styles.timeText}>{item.time}</Text>
-                </View>
-              </View>
-              <Text style={styles.questTitle}>{item.title}</Text>
-              <Text style={styles.hostText}>👑 {item.host} hosting</Text>
-            </View>
-          </Pressable>
-        )}
+        contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 20 }}
+        renderItem={() => <Quest />}
       />
     </SafeAreaView>
   );
@@ -201,9 +97,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  icon: {
-    marginLeft: 12,
-  },
   filterRow: {
     paddingHorizontal: 20,
     marginBottom: 12,
@@ -229,47 +122,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   questRow: {
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
     marginBottom: 16,
-  },
-  questWrapper: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  card: {
-    width: 160,
-  },
-  imageContainer: {
-    position: 'relative',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 6,
-  },
-  image: {
-    width: 160,
-    height: 120,
-    resizeMode: 'cover',
-  },
-  timeTag: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#3366FF',
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  timeText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  questTitle: {
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  hostText: {
-    fontSize: 12,
-    color: '#888',
   },
 });

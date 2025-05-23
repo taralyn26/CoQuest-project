@@ -1,16 +1,16 @@
 // app/(tabs)/map.tsx
-import React, { useState, useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  Pressable,
-  Text,
-  Image,
-  Animated,
-} from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Marker, Region } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React, { useRef, useState } from 'react';
+import {
+  Animated,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
 export default function Map() {
   const router = useRouter();
