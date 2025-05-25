@@ -1,30 +1,34 @@
 // app/signup.tsx
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { signUp } from '../firebase/authService';
 
-interface Props {
-  onSignUp: () => void;
-  onGoToLogin: () => void;
-}
-
-export default function SignUp({ onSignUp, onGoToLogin }: Props) {
+export default function SignUp() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+
+  const handleSignUp = async () => {
+    if (password !== confirm) {
+      Alert.alert('Error', 'Passwords must match');
+      return;
+    }
+    try {
+      await signUp(email, password);
+      router.replace('/login');
+    } catch (e: any) {
+      Alert.alert('Sign Up Failed', e.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.appTitle}>CoQuest</Text>
       <Text style={styles.appSubtitle}>enjoy some spontaneity!</Text>
 
-      <Text style={styles.screenTitle}>  Sign Up</Text>
+      <Text style={styles.screenTitle}>Sign Up</Text>
 
       <View style={styles.card}>
         <Text style={styles.label}>Email</Text>
@@ -57,19 +61,19 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
           onChangeText={setConfirm}
         />
 
-        <Pressable style={styles.primaryButton} onPress={onSignUp}>
+        <Pressable style={styles.primaryButton} onPress={handleSignUp}>
           <Text style={styles.primaryButtonText}>Sign Up</Text>
         </Pressable>
 
-        <Pressable onPress={onGoToLogin}>
-          <Text style={styles.link}>Already have an account? log in</Text>
+        <Pressable onPress={() => router.push('/login')}>
+          <Text style={styles.link}>Already have an account? Log in</Text>
         </Pressable>
       </View>
     </SafeAreaView>
   );
 }
 
-const FONT_FAMILY = 'System';  // ← same font constant here
+const FONT_FAMILY = 'System';
 const PURPLE = '#56018D';
 const DARK = '#212121';
 

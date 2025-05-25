@@ -1,29 +1,28 @@
-// app/login.tsx
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { login } from '../firebase/authService';
 
-interface Props {
-  onLogin: () => void;
-  onGoToSignUp: () => void;
-}
-
-export default function Login({ onLogin, onGoToSignUp }: Props) {
+export default function Login() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      await login(email, password);
+      router.replace('/(tabs)/map');
+    } catch (e: any) {
+      Alert.alert('Login Failed', e.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.appTitle}>CoQuest</Text>
       <Text style={styles.appSubtitle}>enjoy some spontaneity!</Text>
 
-      <Text style={styles.screenTitle}>  Login</Text>
+      <Text style={styles.screenTitle}>Login</Text>
 
       <View style={styles.card}>
         <Text style={styles.label}>Email</Text>
@@ -46,19 +45,19 @@ export default function Login({ onLogin, onGoToSignUp }: Props) {
           onChangeText={setPassword}
         />
 
-        <Pressable style={styles.primaryButton} onPress={onLogin}>
+        <Pressable style={styles.primaryButton} onPress={handleLogin}>
           <Text style={styles.primaryButtonText}>Sign In</Text>
         </Pressable>
 
-        <Pressable onPress={onGoToSignUp}>
-          <Text style={styles.link}>New Here? sign up</Text>
+        <Pressable onPress={() => router.push('/signup')}>
+          <Text style={styles.link}>New here? Sign up</Text>
         </Pressable>
       </View>
     </SafeAreaView>
   );
 }
 
-const FONT_FAMILY = 'System';  // ← change to your chosen font if needed
+const FONT_FAMILY = 'System';
 const PURPLE = '#56018D';
 const DARK = '#212121';
 
