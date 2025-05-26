@@ -13,7 +13,6 @@ interface Props {
   onSignUp: () => void;
   onGoToLogin: () => void;
 }
-
 export default function SignUp({ onSignUp, onGoToLogin }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
