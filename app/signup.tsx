@@ -8,6 +8,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { signUp } from './firebase/authService';
+
 
 interface Props {
   onSignUp: () => void;
@@ -17,6 +19,18 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const handleSignUp = async () => {
+    if (!email || !password || password !== confirm) {
+      alert('Passwords must match and fields cannot be empty');
+      return;
+    }
+    try {
+      await signUp(email, password);
+      onSignUp();              // navigate to tabs on success
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,9 +70,9 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
           onChangeText={setConfirm}
         />
 
-        <Pressable style={styles.primaryButton} onPress={onSignUp}>
-          <Text style={styles.primaryButtonText}>Sign Up</Text>
-        </Pressable>
+        <Pressable style={styles.primaryButton} onPress={handleSignUp}>
+            <Text style={styles.primaryButtonText}>Sign Up</Text>
+          </Pressable>
 
         <Pressable onPress={onGoToLogin}>
           <Text style={styles.link}>Already have an account? log in</Text>

@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { login } from './firebase/authService';
 
 interface Props {
   onLogin: () => void;
@@ -17,6 +18,15 @@ interface Props {
 export default function Login({ onLogin, onGoToSignUp }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      await login(email, password);
+      onLogin();
+    } catch (e: any) {
+      alert('Incorrect credentials: ' + e.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,7 +56,7 @@ export default function Login({ onLogin, onGoToSignUp }: Props) {
           onChangeText={setPassword}
         />
 
-        <Pressable style={styles.primaryButton} onPress={onLogin}>
+        <Pressable style={styles.primaryButton} onPress={handleLogin}>
           <Text style={styles.primaryButtonText}>Sign In</Text>
         </Pressable>
 

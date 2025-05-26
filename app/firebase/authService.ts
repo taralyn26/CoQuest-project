@@ -1,8 +1,9 @@
 // app/firebase/authService.ts
 import {
-  createimport { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
   User,
 } from 'firebase/auth';
 import { auth } from './config';
