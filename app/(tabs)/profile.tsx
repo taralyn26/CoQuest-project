@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Quest from '../../components/Quest'; // adjust the path if needed
 
 const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
@@ -155,20 +156,22 @@ export default function Profile() {
         <Text style={styles.manageButtonText}>Manage Groups</Text>
       </TouchableOpacity>
 
-      {/* HOSTED QUESTS */}
-      <Text style={styles.sectionTitle}>Hosted Quests:</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.questScroll}
-      >
-        {[...Array(3)].map((_, i) => (
-          <View key={i} style={styles.questCard}>
-            <Image source={badgeImage} style={{ width: 100, height: 100 }} />
-            <Text style={{ textAlign: 'center' }}>Mall run</Text>
-          </View>
-        ))}
-      </ScrollView>
+{/* HOSTED QUESTS */}
+<Text style={styles.sectionTitle}>Hosted Quests:</Text>
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.questScroll}
+>
+  {[...Array(6)].map((_, i) => (
+    <View key={i} style={styles.questCard}>
+      <Quest id="fcHfjyxtlaMUqxbCfcHF" from="profile" />
+    </View>
+  ))}
+</ScrollView>
+
+
+
 
       {/* BADGES */}
       <Text style={styles.sectionTitle}>My Badges:</Text>
@@ -402,4 +405,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
   },
+  questGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  questWrapper: {
+    width: '48%',
+    marginBottom: 16,
+  },
+  
 });

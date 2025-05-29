@@ -1,6 +1,6 @@
+// components/Quest.tsx
 import { useRouter } from 'expo-router';
-import { doc, getDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   Dimensions,
   Image,
@@ -9,44 +9,32 @@ import {
   Text,
   View,
 } from 'react-native';
-import { db } from '../app/firebase/config';
-
 
 const { width } = Dimensions.get('window');
-const questImage = require('../assets/images/mall.png'); // temporary static image
+const questImage = require('../assets/images/mall.png'); // placeholder
 
-export default function Quest() {
+export default function Quest({ id = 'fcHfjyxtlaMUqxbCfcHF', from = 'quest-dashboard' }) {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [time, setTime] = useState('');
 
-  useEffect(() => {
-    const fetchQuest = async () => {
-      const ref = doc(db, 'quests', 'fcHfjyxtlaMUqxbCfcHF');
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data();
-        setName(data.name);
-        setTime(data.time.toDate().toLocaleString()); // assuming Firestore Timestamp
-      }
-    };
-    fetchQuest();
-  }, []);
+  const goToDetail = () => {
+    router.push({
+      pathname: `/quest/${id}`,
+      params: { from },
+    });
+  };
 
   return (
-    <Pressable onPress={() => router.push('/mockQuests/quest-detail-mall')}>
-      <View style={styles.card}>
-        <View>
-          <Image source={questImage} style={styles.image} />
-          <View style={styles.dateTag}>
-            <Text style={styles.dateText}>{time}</Text>
-          </View>
-          <View style={styles.hostingTag}>
-            <Text style={styles.hostingText}>👑 hosting</Text>
-          </View>
+    <Pressable onPress={goToDetail} style={styles.card}>
+      <View>
+        <Image source={questImage} style={styles.image} />
+        <View style={styles.dateTag}>
+          <Text style={styles.dateText}>Thursday 10:30am</Text>
         </View>
-        <Text style={styles.title}>{name}</Text>
+        <View style={styles.hostingTag}>
+          <Text style={styles.hostingText}>👑 hosting</Text>
+        </View>
       </View>
+      <Text style={styles.title}>Mall run</Text>
     </Pressable>
   );
 }
@@ -93,6 +81,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+
+
+
 
 
 
