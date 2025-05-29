@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -8,12 +9,29 @@ import {
   Text,
   View,
 } from 'react-native';
+import { db } from '../app/firebase/config';
+
 
 const { width } = Dimensions.get('window');
-const questImage = require('../assets/images/mall.png'); // update if needed
+const questImage = require('../assets/images/mall.png'); // temporary static image
 
 export default function Quest() {
   const router = useRouter();
+  const [name, setName] = useState('');
+  const [time, setTime] = useState('');
+
+  useEffect(() => {
+    const fetchQuest = async () => {
+      const ref = doc(db, 'quests', 'fcHfjyxtlaMUqxbCfcHF');
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        setName(data.name);
+        setTime(data.time.toDate().toLocaleString()); // assuming Firestore Timestamp
+      }
+    };
+    fetchQuest();
+  }, []);
 
   return (
     <Pressable onPress={() => router.push('/mockQuests/quest-detail-mall')}>
@@ -21,13 +39,13 @@ export default function Quest() {
         <View>
           <Image source={questImage} style={styles.image} />
           <View style={styles.dateTag}>
-            <Text style={styles.dateText}>Thursday 10:30am</Text>
+            <Text style={styles.dateText}>{time}</Text>
           </View>
           <View style={styles.hostingTag}>
             <Text style={styles.hostingText}>👑 hosting</Text>
           </View>
         </View>
-        <Text style={styles.title}>Mall run</Text>
+        <Text style={styles.title}>{name}</Text>
       </View>
     </Pressable>
   );
@@ -75,6 +93,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
 
 
