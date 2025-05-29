@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Text
 } from 'react-native';
+import { logout } from '../firebase/authService';
 
 export default function Settings() {
   const router = useRouter();
@@ -49,9 +50,14 @@ export default function Settings() {
 
         <Pressable
           style={styles.row}
-          onPress={() => {
-            // go back to "/" (your Index login/signup flow)
-            router.replace('/');
+          onPress={async () => {
+            try {
+              await logout();
+              console.log('👋 Logged out');
+              router.replace('/');
+            } catch (e: any) {
+              console.error('❌ Logout failed:', e.message);
+            }
           }}
         >
           <Ionicons name="exit-outline" size={20} color="#D00" />

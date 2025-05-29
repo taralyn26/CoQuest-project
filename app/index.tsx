@@ -1,35 +1,44 @@
-// app/index.tsx
-import { useRouter } from 'expo-router';
+// index.tsx
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
 
-import { useAuth } from '../src/AuthProvider'; // ← NEW
+import { AuthProvider, useAuth } from '../src/AuthProvider';
 import Login from './login';
 import SignUp from './signup';
 
 export default function Index() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
+  const { user } = useAuth();
   const router = useRouter();
-  const { user } = useAuth();                 // ← NEW
   const [mode, setMode] = useState<'login' | 'signup'>('login');
 
-  // If a user session exists, send them straight into the tab navigator
   useEffect(() => {
+    console.log('👤 Auth state changed:', user);
     if (user) {
-      router.replace('/(tabs)/map');          // replace = no back-nav to auth screens
+      console.log('✅ Redirecting to /map');
+      router.replace('/(tabs)/map');
     }
   }, [user]);
 
-  // Optional: splash / loading while Firebase determines persistence status
-  if (user === undefined) return null; // could render ActivityIndicator here
+  if (user === undefined) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return mode === 'login' ? (
-    <Login
-      onLogin={() => {}}          // handler now unused but keeps prop contract
-      onGoToSignUp={() => setMode('signup')}
-    />
+    <Login onGoToSignUp={() => setMode('signup')} />
   ) : (
-    <SignUp
-      onSignUp={() => {}}         // idem
-      onGoToLogin={() => setMode('login')}
-    />
+    <SignUp onGoToLogin={() => setMode('login')} />
   );
 }

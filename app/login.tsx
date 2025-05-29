@@ -1,6 +1,7 @@
 // app/login.tsx
 import React, { useState } from 'react';
 import {
+  Alert,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -11,7 +12,6 @@ import {
 import { login } from './firebase/authService';
 
 interface Props {
-  onLogin: () => void;
   onGoToSignUp: () => void;
 }
 
@@ -22,9 +22,11 @@ export default function Login({ onLogin, onGoToSignUp }: Props) {
   const handleLogin = async () => {
     try {
       await login(email, password);
-      onLogin();
+      console.log('✅ Login successful for:', email);
+      // No need to navigate — index.tsx handles it via user state
     } catch (e: any) {
-      alert('Incorrect credentials: ' + e.message);
+      console.error('❌ Login failed:', e.message);
+      Alert.alert('Incorrect credentials', mapFirebaseError(e.code));
     }
   };
 
