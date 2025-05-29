@@ -1,4 +1,5 @@
 // app/signup.tsx
+import { doc, getFirestore, setDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
   Pressable,
@@ -9,24 +10,39 @@ import {
   View,
 } from 'react-native';
 import { signUp } from './firebase/authService';
+import { app } from './firebase/config';
 
+const db = getFirestore(app);
 
 interface Props {
   onSignUp: () => void;
   onGoToLogin: () => void;
 }
 export default function SignUp({ onSignUp, onGoToLogin }: Props) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+
   const handleSignUp = async () => {
-    if (!email || !password || password !== confirm) {
-      alert('Passwords must match and fields cannot be empty');
+    if (!email.endsWith('@stanford.edu')) {
+      alert('Only Stanford email addresses are allowed');
+      return;
+    }
+    if (!email || !password || password !== confirm || !firstName || !lastName) {
+      alert('All fields are required and passwords must match');
       return;
     }
     try {
-      await signUp(email, password);
-      onSignUp();              // navigate to tabs on success
+      const cred = await signUp(email, password);
+      const handle = email.split('@')[0];
+      await setDoc(doc(db, 'flp_names', handle), {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        "@": handle,
+      });
+      onSignUp();
     } catch (e: any) {
       alert(e.message);
     }
@@ -36,10 +52,27 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
     <SafeAreaView style={styles.container}>
       <Text style={styles.appTitle}>CoQuest</Text>
       <Text style={styles.appSubtitle}>enjoy some spontaneity!</Text>
-
       <Text style={styles.screenTitle}>  Sign Up</Text>
-
       <View style={styles.card}>
+
+        <Text style={styles.label}>First Name</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your first name"
+          placeholderTextColor="#999"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+
+        <Text style={styles.label}>Last Name</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your last name"
+          placeholderTextColor="#999"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
@@ -71,8 +104,8 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
         />
 
         <Pressable style={styles.primaryButton} onPress={handleSignUp}>
-            <Text style={styles.primaryButtonText}>Sign Up</Text>
-          </Pressable>
+          <Text style={styles.primaryButtonText}>Sign Up</Text>
+        </Pressable>
 
         <Pressable onPress={onGoToLogin}>
           <Text style={styles.link}>Already have an account? log in</Text>
@@ -82,7 +115,7 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
   );
 }
 
-const FONT_FAMILY = 'System';  // ← same font constant here
+const FONT_FAMILY = 'System';
 const PURPLE = '#56018D';
 const DARK = '#212121';
 
