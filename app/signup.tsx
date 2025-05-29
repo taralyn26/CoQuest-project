@@ -1,5 +1,5 @@
 // app/signup.tsx
-import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
   Pressable,
@@ -10,14 +10,13 @@ import {
   View,
 } from 'react-native';
 import { signUp } from './firebase/authService';
-import { app } from './firebase/config';
-
-const db = getFirestore(app);
+import { db } from './firebase/config';
 
 interface Props {
   onSignUp: () => void;
   onGoToLogin: () => void;
 }
+
 export default function SignUp({ onSignUp, onGoToLogin }: Props) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -34,14 +33,19 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
       alert('All fields are required and passwords must match');
       return;
     }
+    
     try {
-      const cred = await signUp(email, password);
+      // This will now create both the Firebase Auth user AND the Firestore user profile
+      await signUp(email, password, firstName, lastName);
+      
+      // Also create the flp_names document (for your existing functionality)
       const handle = email.split('@')[0];
       await setDoc(doc(db, 'flp_names', handle), {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         "@": handle,
       });
+      
       onSignUp();
     } catch (e: any) {
       alert(e.message);

@@ -10,7 +10,13 @@ import { auth } from './config';
 
 // //// PURE WRAPPERS /////////////////////////////////////
 
-export async function signUp(email: string, pwd: string) {
+// Simple signup - no Firestore profile creation here
+export async function signUp(
+  email: string, 
+  pwd: string, 
+  firstName: string, 
+  lastName: string
+) {
   return createUserWithEmailAndPassword(auth, email.trim(), pwd);
 }
 

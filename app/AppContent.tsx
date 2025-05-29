@@ -1,4 +1,4 @@
-// app/index.tsx
+// app/AppContent.tsx
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -7,22 +7,19 @@ import { useAuth } from '../src/AuthProvider';
 import Login from './login';
 import SignUp from './signup';
 
-export default function Index() {
-  console.log('📱 Index component rendering');
-  
-  const { user } = useAuth();
+export default function AppContent() {
   const router = useRouter();
+  const { user } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
 
   useEffect(() => {
-    console.log('👤 Auth state changed in index:', user);
+    console.log('👤 Auth state changed:', user);
     if (user) {
       console.log('✅ Redirecting to /map');
       router.replace('/(tabs)/map');
     }
   }, [user]);
 
-  // Still loading auth state
   if (user === undefined) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -31,12 +28,11 @@ export default function Index() {
     );
   }
 
-  // User is logged in, let router handle navigation
   if (user) {
+    // User is logged in, let the router handle navigation
     return null;
   }
 
-  // User is not logged in, show auth screens
   return mode === 'login' ? (
     <Login onGoToSignUp={() => setMode('signup')} />
   ) : (

@@ -1,48 +1,163 @@
 // app/(tabs)/create-group.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
 } from 'react-native';
+
+import { useAuth } from '../src/AuthProvider';
+import { createGroup, searchUsers, type UserProfile } from './firebase/groupService';
 
 const PURPLE = '#56018D';
 
-// mock list of all possible users
-const allUsers = [
-  'Aya','Isaias','Jad','Emi','Varsha','Nico','Yujina','Alex','Carmah','Lianah'
-];
-
 export default function CreateGroup() {
   const router = useRouter();
+  const { user } = useAuth();
   const [groupName, setGroupName] = useState('');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
-  // filter by search term
-  const filtered = useMemo(
-    () =>
-      allUsers.filter(u =>
-        u.toLowerCase().includes(search.toLowerCase())
-      ),
-    [search]
-  );
+  // Load users on component mount
+  useEffect(() => {
+    console.log('🔄 useEffect triggered in CreateGroup');
+    console.log('👤 User in useEffect:', user);
+    
+    // If user is undefined, auth is still loading
+    if (user === undefined) {
+      console.log('⏳ Auth still loading, waiting...');
+      return;
+    }
+    
+    // If user is null, they're not logged in
+    if (user === null) {
+      console.log('❌ No user logged in');
+      setLoading(false);
+      return;
+    }
+    
+    loadUsers();
+  }, [user]);
 
-  const toggle = (user: string) => {
+  const loadUsers = async () => {
+    console.log('🚀 loadUsers called');
+    
+    // Check for undefined (still loading) vs null (not logged in)
+    if (user === undefined) {
+      console.log('⏳ User still loading');
+      return;
+    }
+    
+    if (!user) {
+      console.log('❌ No user found');
+      setLoading(false);
+      return;
+    }
+    
+    console.log('👤 Current user in loadUsers:', user.email);
+    
+    try {
+      setLoading(true);
+      const currentHandle = user.email?.split('@')[0];
+      console.log('📧 Current handle:', currentHandle);
+      console.log('🔍 About to call searchUsers...');
+      
+      const users = await searchUsers('', currentHandle);
+      console.log('✅ Users loaded:', users.length);
+      console.log('👥 Users data:', users);
+      
+      setAllUsers(users);
+    } catch (error) {
+      console.error('❌ Error loading users:', error);
+      console.error('❌ Error details:', error.message);
+      Alert.alert('Error', 'Failed to load users');
+    } finally {
+      console.log('🏁 Setting loading to false in loadUsers');
+      setLoading(false);
+    }
+  };
+
+  // Filter users based on search term
+  const filtered = useMemo(() => {
+    if (!search.trim()) return allUsers;
+    
+    return allUsers.filter(u =>
+      u.displayName.toLowerCase().includes(search.toLowerCase()) ||
+      u.first_name.toLowerCase().includes(search.toLowerCase()) ||
+      u.last_name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, allUsers]);
+
+  const toggle = (userHandle: string) => {
     setSelected(sel =>
-      sel.includes(user)
-        ? sel.filter(x => x !== user)
-        : [...sel, user]
+      sel.includes(userHandle)
+        ? sel.filter(x => x !== userHandle)
+        : [...sel, userHandle]
     );
   };
 
-  const canCreate = groupName.trim().length > 0 && selected.length > 0;
+  const canCreate = groupName.trim().length > 0 && selected.length > 0 && !creating;
+
+  const handleCreateGroup = async () => {
+    console.log('🎯 handleCreateGroup called');
+    console.log('👤 User in handleCreateGroup:', user?.email);
+    console.log('📝 Group name:', groupName);
+    console.log('👥 Selected members:', selected);
+    
+    if (!canCreate || !user) return;
+    
+    try {
+      setCreating(true);
+      
+      const currentHandle = user.email?.split('@')[0];
+      console.log('📧 Current handle for group creation:', currentHandle);
+      
+      if (!currentHandle) {
+        throw new Error('Unable to get user handle');
+      }
+      
+      console.log('🔍 About to create group...');
+      await createGroup(groupName.trim(), selected, currentHandle);
+      console.log('✅ Group created successfully');
+      
+      Alert.alert(
+        'Success!', 
+        'Group created successfully',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    } catch (error) {
+      console.error('❌ Error creating group:', error);
+      console.error('❌ Error details:', error.message);
+      Alert.alert('Error', 'Failed to create group. Please try again.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  console.log('🎨 Rendering CreateGroup, user:', user, 'loading:', loading);
+
+  // Show loading while auth is determining user state OR while loading users
+  if (user === undefined || loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={PURPLE} />
+          <Text style={{ marginTop: 10 }}>Loading users...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -75,19 +190,29 @@ export default function CreateGroup() {
           style={styles.input}
         />
 
+        {/* selected count */}
+        {selected.length > 0 && (
+          <Text style={styles.selectedCount}>
+            {selected.length} member{selected.length === 1 ? '' : 's'} selected
+          </Text>
+        )}
+
         {/* list of users */}
-        {filtered.map((user, i) => {
-          const isSel = selected.includes(user);
+        {filtered.map((userProfile) => {
+          const isSel = selected.includes(userProfile.handle);
           return (
             <Pressable
-              key={i}
+              key={userProfile.handle}
               style={[
                 styles.userRow,
                 isSel && { borderColor: PURPLE, borderWidth: 2 }
               ]}
-              onPress={() => toggle(user)}
+              onPress={() => toggle(userProfile.handle)}
             >
-              <Text style={styles.userText}>{user}</Text>
+              <View>
+                <Text style={styles.userText}>{userProfile.displayName}</Text>
+                <Text style={styles.userEmail}>{userProfile.email}</Text>
+              </View>
               {isSel && (
                 <Ionicons name="checkmark-circle" size={20} color={PURPLE} />
               )}
@@ -95,21 +220,24 @@ export default function CreateGroup() {
           );
         })}
 
+        {filtered.length === 0 && (
+          <Text style={styles.noResults}>No users found</Text>
+        )}
+
         {/* bottom create button */}
         <Pressable
           style={[
             styles.createButton,
             !canCreate && { backgroundColor: '#CCC' }
           ]}
-          onPress={() => {
-            if (!canCreate) return;
-            // TODO: actually send to backend...
-            // for now just go back
-            router.back();
-          }}
+          onPress={handleCreateGroup}
           disabled={!canCreate}
         >
-          <Text style={styles.createText}>Create Group</Text>
+          {creating ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.createText}>Create Group</Text>
+          )}
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -149,6 +277,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 12,
   },
+  selectedCount: {
+    fontSize: 12,
+    color: PURPLE,
+    marginBottom: 10,
+    fontWeight: '600',
+  },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -161,6 +295,18 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 16,
     color: '#333',
+    fontWeight: '600',
+  },
+  userEmail: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  noResults: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: 14,
+    marginTop: 20,
   },
   createButton: {
     backgroundColor: PURPLE,
