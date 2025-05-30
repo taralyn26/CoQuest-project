@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -12,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import Quest from '../../components/Quest'; // adjust the path if needed
+import { db } from '../firebase/config'; // adjust path if needed
 
 const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
@@ -76,6 +78,41 @@ export default function Profile() {
   const toggleExpand = (name: string) => {
     setExpanded(expanded === name ? null : name);
   };
+
+  // add near the top of your Profile component:
+const [hostedQuests, setHostedQuests] = useState<any[]>([]);
+
+useEffect(() => {
+  const fetchHostedQuests = async () => {
+    try {
+      const userRef = doc(db, 'users', 'test_user_001');
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+
+      const data = userSnap.data();
+      const hosted = data.hosted_quests || [];
+      const now = Date.now() / 1000;
+
+      const quests = await Promise.all(
+        hosted.map(async (q: any) => {
+          const id = typeof q === 'string' ? q : q.id;
+          const snap = await getDoc(doc(db, 'quests', id));
+          if (!snap.exists()) return null;
+          const quest = snap.data();
+          return { id, ...quest };
+        })
+      );
+
+      const valid = quests.filter(Boolean) as { id: string; end_time?: { seconds: number } }[];
+      valid.sort((a, b) => (a.end_time?.seconds ?? 0) - (b.end_time?.seconds ?? 0));
+      setHostedQuests(valid);
+    } catch (err) {
+      console.error('❌ Failed to load hosted quests on profile:', err);
+    }
+  };
+
+  fetchHostedQuests();
+}, []);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -163,12 +200,13 @@ export default function Profile() {
   showsHorizontalScrollIndicator={false}
   contentContainerStyle={styles.questScroll}
 >
-  {[...Array(6)].map((_, i) => (
-    <View key={i} style={styles.questCard}>
-      <Quest id="fcHfjyxtlaMUqxbCfcHF" from="profile" />
+  {hostedQuests.map((q) => (
+    <View key={q.id} style={styles.questCard}>
+      <Quest id={q.id} from="profile" />
     </View>
   ))}
 </ScrollView>
+
 
 
 

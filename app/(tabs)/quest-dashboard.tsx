@@ -1,6 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -10,111 +9,138 @@ import {
   View,
 } from 'react-native';
 import Quest from '../../components/Quest';
+import { db } from '../firebase/config';
 
-const PURPLE = '#56018D';
-const availableFilters = ['All Quests', 'Happening Now', 'Sports', 'Within 1 mile'];
+const filters = ['Upcoming', 'Hosting', 'Past'];
 
 export default function QuestDashboard() {
-  const router = useRouter();
-  const [selectedFilters, setSelectedFilters] = useState<string[]>(['All Quests']);
+  const [selected, setSelected] = useState('Upcoming');
+  const [upcoming, setUpcoming] = useState<any[]>([]);
+  const [past, setPast] = useState<any[]>([]);
+  const [hostedUpcoming, setHostedUpcoming] = useState<any[]>([]);
+  const [hostedPast, setHostedPast] = useState<any[]>([]);
 
-  const toggleFilter = (filter: string) => {
-    setSelectedFilters(prev =>
-      prev.includes(filter)
-        ? prev.filter(f => f !== filter)
-        : [...prev.filter(f => f !== 'All Quests'), filter]
-    );
-  };
+  useEffect(() => {
+    const fetchQuests = async () => {
+      try {
+        const ref = doc(db, 'users', 'test_user_001');
+        const snap = await getDoc(ref);
+        if (!snap.exists()) return;
+
+        const data = snap.data();
+        const display = data.display_quests || [];
+        const hosted = data.hosted_quests || [];
+        const now = Date.now() / 1000;
+
+        const all = [...display, ...hosted].map((q: any) => (typeof q === 'string' ? q : q.id));
+        const result = await Promise.all(
+          all.map(async (id) => {
+            const qSnap = await getDoc(doc(db, 'quests', id));
+            if (!qSnap.exists()) return null;
+            const quest = qSnap.data();
+            return { id, ...quest };
+          })
+        );
+
+        const upcomingQs = result
+          .filter(q => q?.end_time?.seconds > now && display.includes(q.id))
+          .sort((a, b) => a.end_time.seconds - b.end_time.seconds);
+
+        const pastQs = result
+          .filter(q => q?.end_time?.seconds <= now && display.includes(q.id))
+          .sort((a, b) => b.end_time.seconds - a.end_time.seconds);
+
+        const hostedU = result
+          .filter(q => q?.end_time?.seconds > now && hosted.includes(q.id))
+          .sort((a, b) => a.end_time.seconds - b.end_time.seconds);
+
+        const hostedP = result
+          .filter(q => q?.end_time?.seconds <= now && hosted.includes(q.id))
+          .sort((a, b) => b.end_time.seconds - a.end_time.seconds);
+
+        setUpcoming(upcomingQs);
+        setPast(pastQs);
+        setHostedUpcoming(hostedU);
+        setHostedPast(hostedP);
+      } catch (err) {
+        console.error('❌ Failed to load user quests:', err);
+      }
+    };
+
+    fetchQuests();
+  }, []);
+
+  const renderQuests = (list: any[]) => (
+    <View style={styles.questGrid}>
+      {list.map((q) => (
+        <View key={q.id} style={styles.questWrapper}>
+          <Quest id={q.id} from="quest-dashboard" />
+        </View>
+      ))}
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Text style={styles.avatar}>👤</Text>
-        <Text style={styles.title}>Quest Dashboard</Text>
-      </View>
-
+      <Text style={styles.title}>Quest Dashboard</Text>
       <View style={styles.filterRow}>
-        <Pressable style={styles.sortButton}>
-          <Ionicons name="menu" size={16} />
-          <Text style={styles.sortText}>Sort</Text>
-        </Pressable>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {availableFilters.map((label) => {
-            const isSelected = selectedFilters.includes(label);
-            return (
-              <Pressable
-                key={label}
-                onPress={() => toggleFilter(label)}
-                style={[
-                  styles.filterChip,
-                  isSelected && { backgroundColor: PURPLE },
-                ]}
-              >
-                <Text style={[styles.filterText, isSelected && { color: '#FFF' }]}>
-                  {label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+        {filters.map(f => (
+          <Pressable
+            key={f}
+            onPress={() => setSelected(f)}
+            style={[styles.chip, selected === f && styles.chipSelected]}
+          >
+            <Text style={[styles.chipText, selected === f && { color: '#FFF' }]}>{f}</Text>
+          </Pressable>
+        ))}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.questGrid}>
-          {[...Array(8)].map((_, i) => (
-            <View key={i} style={styles.questWrapper}>
-              <Quest />
-            </View>
-          ))}
-        </View>
+        {selected === 'Upcoming' && renderQuests([...upcoming, ...hostedUpcoming])}
+        {selected === 'Past' && renderQuests([...past, ...hostedPast])}
+        {selected === 'Hosting' && (
+          <>
+            {hostedUpcoming.length > 0 && (
+              <>
+                <Text style={styles.sectionHeader}>Upcoming:</Text>
+                {renderQuests(hostedUpcoming)}
+              </>
+            )}
+            {hostedPast.length > 0 && (
+              <>
+                <Text style={styles.sectionHeader}>Past:</Text>
+                {renderQuests(hostedPast)}
+              </>
+            )}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  avatar: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  title: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-  },
+  safe: { flex: 1, backgroundColor: '#FFF' },
+  title: { fontSize: 24, fontWeight: '700', padding: 20 },
   filterRow: {
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  sortButton: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    paddingHorizontal: 20,
+    marginBottom: 10,
   },
-  sortText: {
-    marginLeft: 4,
-    fontWeight: '500',
-  },
-  filterChip: {
-    backgroundColor: '#EFEFEF',
+  chip: {
+    backgroundColor: '#EEE',
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 20,
-    marginRight: 8,
+    borderRadius: 16,
+    marginRight: 10,
   },
-  filterText: {
+  chipSelected: {
+    backgroundColor: '#56018D',
+  },
+  chipText: {
     fontSize: 14,
     fontWeight: '500',
+    color: '#000',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -129,6 +155,19 @@ const styles = StyleSheet.create({
     width: '48%',
     marginBottom: 16,
   },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 10,
+    marginTop: 20,
+    color: '#56018D',
+  },
 });
+
+
+
+
+
+
 
 

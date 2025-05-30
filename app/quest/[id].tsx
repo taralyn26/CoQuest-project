@@ -3,12 +3,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
-    Image,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    View,
+  Image,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { db } from '../firebase/config';
 
@@ -28,14 +28,22 @@ export default function QuestDetailPage() {
         if (snap.exists()) {
           setQuest(snap.data());
         } else {
-          console.log('Quest not found');
+          console.log('❌ Quest not found');
         }
       } catch (err) {
-        console.error('Failed to fetch quest:', err);
+        console.error('❌ Failed to fetch quest:', err);
       }
     };
     fetchQuest();
   }, [id]);
+
+  const handleBack = () => {
+    if (from) {
+      router.push(`/(tabs)/${from}`);
+    } else {
+      router.push('/(tabs)/quest-dashboard');
+    }
+  };
 
   if (!quest) {
     return (
@@ -45,29 +53,12 @@ export default function QuestDetailPage() {
     );
   }
 
-  const goBack = () => {
-    if (from) {
-      router.push(`/(tabs)/${from}`);
-    } else {
-      router.push('/(tabs)/quest-dashboard');
-    }
-  };
-
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        const { from } = useLocalSearchParams();
-
-<Pressable onPress={() => {
-  if (from) {
-    router.push(`/(tabs)/${from}`);
-  } else {
-    router.push('/(tabs)/quest-dashboard');
-  }
-}}>
-  <Ionicons name="arrow-back" size={24} color="#000" />
-</Pressable>
-
+        <Pressable onPress={handleBack}>
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
       </View>
 
       <Text style={styles.title}>{quest.name}</Text>
@@ -76,8 +67,19 @@ export default function QuestDetailPage() {
       <View style={styles.body}>
         <Text style={styles.host}>Hosted by Taralyn</Text>
         <Text style={styles.datetime}>
-          {new Date(quest.time.toDate()).toLocaleString()}
-        </Text>
+  {(() => {
+    const ts = quest?.when ?? quest?.time;
+    if (!ts?.seconds) return '';
+    const date = new Date(ts.seconds * 1000);
+    return `${date.toLocaleDateString(undefined, {
+      weekday: 'long',
+    })} at ${date.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+    })}`;
+  })()}
+</Text>
+
         <Text style={styles.description}>{quest.description}</Text>
 
         <View style={styles.locationRow}>
@@ -143,4 +145,5 @@ const styles = StyleSheet.create({
   },
   bubbleText: { fontSize: 14, color: '#333' },
 });
+
 

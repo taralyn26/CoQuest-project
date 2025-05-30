@@ -1,6 +1,6 @@
-// components/Quest.tsx
 import { useRouter } from 'expo-router';
-import React from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -9,32 +9,62 @@ import {
   Text,
   View,
 } from 'react-native';
+import { db } from '../app/firebase/config';
 
 const { width } = Dimensions.get('window');
-const questImage = require('../assets/images/mall.png'); // placeholder
+const questImage = require('../assets/images/mall.png'); // Placeholder
 
-export default function Quest({ id = 'fcHfjyxtlaMUqxbCfcHF', from = 'quest-dashboard' }) {
+export default function Quest({ id, from = 'quest-dashboard' }: { id: string, from?: string }) {
   const router = useRouter();
+  const [quest, setQuest] = useState(null);
+
+  useEffect(() => {
+    const fetchQuest = async () => {
+      try {
+        const ref = doc(db, 'quests', id);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          setQuest(snap.data());
+        }
+      } catch (err) {
+        console.error('Failed to fetch quest:', err);
+      }
+    };
+    fetchQuest();
+  }, [id]);
 
   const goToDetail = () => {
-    router.push({
-      pathname: `/quest/${id}`,
-      params: { from },
-    });
+    router.push({ pathname: `/quest/${id}`, params: { from } });
   };
+
+  if (!quest) return null;
+
+  let formattedDate = '';
+  const when = quest.when;
+  if (when?.seconds) {
+    const date = new Date(when.seconds * 1000);
+    formattedDate = `${date.toLocaleDateString(undefined, {
+      weekday: 'long',
+    })} at ${date.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+    })}`;
+  }
 
   return (
     <Pressable onPress={goToDetail} style={styles.card}>
       <View>
         <Image source={questImage} style={styles.image} />
-        <View style={styles.dateTag}>
-          <Text style={styles.dateText}>Thursday 10:30am</Text>
-        </View>
+        {formattedDate ? (
+          <View style={styles.dateTag}>
+            <Text style={styles.dateText}>{formattedDate}</Text>
+          </View>
+        ) : null}
         <View style={styles.hostingTag}>
           <Text style={styles.hostingText}>👑 hosting</Text>
         </View>
       </View>
-      <Text style={styles.title}>Mall run</Text>
+      <Text style={styles.title}>{quest.name}</Text>
     </Pressable>
   );
 }
@@ -81,6 +111,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+
+
+
+
+
+
 
 
 
