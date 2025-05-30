@@ -1,23 +1,25 @@
-// app/(tabs)/map.tsx
-import React, { useState, useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  Pressable,
-  Text,
-  Image,
-  Animated,
-} from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Marker, Region } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import { db } from '../firebase/config';
 
 export default function Map() {
   const router = useRouter();
-  const [selectedQuest, setSelectedQuest] = useState(null);
+  const [selectedQuest, setSelectedQuest] = useState<any>(null);
+  const [quests, setQuests] = useState<any[]>([]);
   const [mapCenter, setMapCenter] = useState({ latitude: 0, longitude: 0 });
   const scaleAnim = useRef(new Animated.Value(0)).current;
-  const CLOSING_THRESHOLD = 0.0015; // degrees of lat/lng
+  const CLOSING_THRESHOLD = 0.0015;
 
   const stanfordRegion: Region = {
     latitude: 37.4275,
@@ -26,99 +28,58 @@ export default function Map() {
     longitudeDelta: 0.01,
   };
 
-  const mockQuests = [
-    {
-      id: '1',
-      title: 'Library Cram Session',
-      coordinate: { latitude: 37.42689, longitude: -122.16678 },
-      route: '/mockQuests/quest-detail-library',
-      image: require('../../assets/images/Stanford_University_Green_Library_Bing_Wing.jpg'),
-      description: 'Study session before midterms at Green Library!',
-      time: 'Saturday, May 5 • 10:30am – 12:30pm',
-      host: 'You',
-      happeningNow: false,
-    },
-    {
-      id: '2',
-      title: 'Wilbur Dinner',
-      coordinate: { latitude: 37.42415, longitude: -122.16301 },
-      route: '/mockQuests/quest-detail-wilbur',
-      image: require('../../assets/images/Wilbur-Dining-Hall.webp'),
-      description: 'Wilbur dinner! (they have sesame chicken today!)',
-      time: 'Wednesday, April 30 • Now – 8:00pm',
-      host: 'Wilbur Crew',
-      happeningNow: true,
-    },
-    {
-      id: '3',
-      title: 'Mall Run',
-      coordinate: { latitude: 37.443556450311306, longitude: -122.17098481863421},
-      route: '/mockQuests/quest-detail-mall',
-      image: require('../../assets/images/aritzia.png'),
-      description: 'I want to hit Aritzia and maybe grab some food at Joe & the Juice! I was planning on biking and leaving at 10:15 from the Oval!',
-      time: 'Wednesday, April 30 • 10am – 12:00pm',
-      host: 'Aya',
-      happeningNow: false,
-    },
-    {
-      id: '4',
-      title: 'Oval Chill',
-      coordinate: { latitude: 37.43033428584338, longitude: -122.16938113218649 },
-      route: '/mockQuests/quest-detail-oval',
-      image: require('../../assets/images/oval.jpg'), // Replace with actual asset path
-      description: 'Chilling on the Oval with a blanket, snacks, and music. Come vibe, play frisbee, or just hang out in the sun!',
-      time: 'Thursday, May 1 • 2:00pm – 4:00pm',
-      host: 'Isaias',
-      happeningNow: true,
-    },
-    {
-      id: '5',
-      title: 'Fountain Hop 🌀',
-      coordinate: { latitude: 37.42611799496791, longitude: -122.17337613033567 },
-      route: '/mockQuests/quest-detail-fountain',
-      image: require('../../assets/images/fountain-hop.jpeg'),
-      description: 'It’s warm, we’re bored, and we’ve got towels. Starting at the Claw and seeing how many we can hit. Bring flip-flops, your best chaos energy, and maybe a speaker?',
-      time: 'Friday, May 10 • 7:00pm – 8:30pm',
-      host: 'Isaias',
-      happeningNow: false,
-    },
-    {
-      id: '6',
-      title: 'Tennis Hitaround 🎾',
-      coordinate: { latitude: 37.42546996347623, longitude: -122.18266330753647 },
-      route: '/mockQuests/quest-detail-tennis',
-      image: require('../../assets/images/tennis.jpg'),
-      description: 'Nothing serious—just bringing rackets and hitting some balls around. All levels welcome, come rally or just chill courtside!',
-      time: 'Sunday, May 12 • 4:00pm – 5:00pm',
-      host: 'Taralyn',
-      happeningNow: false,
-    },
-    {
-      id: '7',
-      title: 'Pickup Soccer ⚽️',
-      coordinate: { latitude: 37.426375105086144, longitude: -122.17578990940434 }, // Approx. Roble Field, Stanford
-      route: '/mockQuests/quest-detail-soccer',
-      image: require('../../assets/images/soccer.avif'),
-      description: 'Super chill pickup game on Roble Field. Come run around or just kick for fun—no pressure! We’ve got a ball and some cones. Just bring yourself and maybe water.',
-      time: 'Saturday, May 11 • 5:30pm – 7:00pm',
-      host: 'Emi',
-      happeningNow: false,
-    },
-    {
-      id: '8',
-      title: 'S’mores & Chill 🔥',
-      coordinate: { latitude: 37.42626383533444, longitude: -122.15724181475235 },
-      route: '/mockQuests/quest-detail-smores',
-      image: require('../../assets/images/smores.jpg'),
-      description: 'Bringing marshmallows, chocolate, and grahams to the EVGR B fireplace! Come hang, roast a few, and vibe by the flames. Extra sticks provided 🔥',
-      time: 'Thursday, May 9 • 8:00pm – 9:30pm',
-      host: 'Aya',
-      happeningNow: false,
-    },    
-    
-  ];
+  useEffect(() => {
+    const fetchQuests = async () => {
+      try {
+        const ref = doc(db, 'users', 'test_user_001');
+        const snap = await getDoc(ref);
+        if (!snap.exists()) return;
+  
+        const data = snap.data();
+        const display = data.display_quests || [];
+        const hosted = data.hosted_quests || [];
+        const all = [...display, ...hosted].map((q: any) =>
+          typeof q === 'string' ? q : q.id
+        );
+  
+        const now = Date.now() / 1000;
+        const results = await Promise.all(
+          all.map(async (id) => {
+            const questSnap = await getDoc(doc(db, 'quests', id));
+            if (!questSnap.exists()) return null;
+  
+            const quest = questSnap.data();
+            const end = quest?.end_time?.seconds;
+            const loc = quest?.location;
+  
+            if (
+              typeof end !== 'number' ||
+              end <= now ||
+              !loc ||
+              typeof loc.latitude !== 'number' ||
+              typeof loc.longitude !== 'number'
+            ) {
+              console.log(`⚠️ Skipping quest ${id} due to missing/invalid data`);
+              return null;
+            }
+  
+            return { id, ...quest };
+          })
+        );
+  
+        const filtered = results.filter(Boolean) as any[];
+        console.log('✅ Loaded quests:', filtered.map((q) => q.name));
+        setQuests(filtered);
+      } catch (err) {
+        console.error('❌ Failed to load quests for map:', err);
+      }
+    };
+  
+    fetchQuests();
+  }, []);
+  
 
-  const openPopup = (quest) => {
+  const openPopup = (quest: any) => {
     setSelectedQuest(quest);
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
   };
@@ -131,11 +92,11 @@ export default function Map() {
     }).start(() => setSelectedQuest(null));
   };
 
-  const handleRegionChangeComplete = (region) => {
+  const handleRegionChangeComplete = (region: Region) => {
     setMapCenter({ latitude: region.latitude, longitude: region.longitude });
     if (selectedQuest) {
-      const latDiff = Math.abs(region.latitude - selectedQuest.coordinate.latitude);
-      const lngDiff = Math.abs(region.longitude - selectedQuest.coordinate.longitude);
+      const latDiff = Math.abs(region.latitude - selectedQuest.location.latitude);
+      const lngDiff = Math.abs(region.longitude - selectedQuest.location.longitude);
       if (latDiff > CLOSING_THRESHOLD || lngDiff > CLOSING_THRESHOLD) {
         closePopup();
       }
@@ -148,48 +109,55 @@ export default function Map() {
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         region={stanfordRegion}
-        showsUserLocation={true}
+        showsUserLocation
         showsMyLocationButton={false}
-        onRegionChangeComplete={handleRegionChangeComplete} // Close popup if moved far
+        onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {mockQuests.map((quest) => (
+        {quests.map((quest) => (
           <Marker
-            key={quest.id}
-            coordinate={quest.coordinate}
-            onPress={() => openPopup(quest)}
-          >
-            <View style={styles.customMarker}>
-              <Image source={quest.image} style={styles.markerImage} />
-            </View>
-          </Marker>
+          key={quest.id}
+          coordinate={{
+            latitude: quest.location.latitude,
+            longitude: quest.location.longitude,
+          }}
+          onPress={() => openPopup(quest)}
+        >
+          <View style={styles.markerCircle}>
+            <Text style={styles.markerText}>{quest.name}</Text>
+          </View>
+        </Marker>
+        
         ))}
       </MapView>
 
-      {/* Stationary Popup Above Marker */}
       {selectedQuest && (
         <Animated.View style={[styles.calloutBox, { transform: [{ scale: scaleAnim }] }]}>
-          <Image source={selectedQuest.image} style={styles.calloutImage} />
+          <Image source={require('../../assets/images/mall.png')} style={styles.calloutImage} />
           <View style={styles.calloutContent}>
             <View style={styles.calloutHeader}>
-              <Text style={styles.calloutTitle}>{selectedQuest.title}</Text>
+              <Text style={styles.calloutTitle}>{selectedQuest.name}</Text>
               <Pressable onPress={closePopup}>
                 <Ionicons name="close" size={20} color="#333" />
               </Pressable>
             </View>
 
-            {selectedQuest.happeningNow && (
-              <Text style={styles.nowBadge}>Happening Now</Text>
-            )}
+            <Text style={styles.calloutHost}>
+              Hosted by {Array.isArray(selectedQuest.host) ? selectedQuest.host[0] : 'Unknown'}
+            </Text>
 
-            <Text style={styles.calloutHost}>Hosted by {selectedQuest.host}</Text>
-            <Text style={styles.calloutTime}>{selectedQuest.time}</Text>
-            <Text style={styles.calloutDesc}>{selectedQuest.description}</Text>
+            <Text style={styles.calloutTime}>
+              {selectedQuest?.when?.toDate ? new Date(selectedQuest.when.toDate()).toLocaleString() : ''}
+            </Text>
+
+            <Text style={styles.calloutDesc}>
+              {selectedQuest.description || 'No description provided.'}
+            </Text>
 
             <Pressable
               style={styles.calloutButton}
               onPress={() => {
                 closePopup();
-                router.push(selectedQuest.route);
+                router.push(`/quest/${selectedQuest.id}`);
               }}
             >
               <Text style={styles.calloutButtonText}>View Details</Text>
@@ -229,7 +197,7 @@ const styles = StyleSheet.create({
   },
   calloutBox: {
     position: 'absolute',
-    bottom: 180, // Raised above marker
+    bottom: 180,
     left: 20,
     right: 20,
     backgroundColor: '#FFF',
@@ -257,27 +225,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  nowBadge: {
-    backgroundColor: PURPLE,
-    color: 'white',
-    fontSize: 12,
-    alignSelf: 'flex-start',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+  calloutHost: {
+    fontSize: 13,
     marginTop: 6,
-    fontWeight: '600',
+    color: '#666',
   },
-  calloutHost: { fontSize: 13, marginTop: 6, color: '#666' },
-  calloutTime: { fontSize: 13, color: '#666', marginBottom: 8 },
-  calloutDesc: { fontSize: 14, marginBottom: 12 },
+  calloutTime: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 8,
+  },
+  calloutDesc: {
+    fontSize: 14,
+    marginBottom: 12,
+  },
   calloutButton: {
     backgroundColor: PURPLE,
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
-  calloutButtonText: { color: 'white', fontWeight: '600' },
+  calloutButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  },
   fab: {
     position: 'absolute',
     bottom: 24,
@@ -296,4 +267,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  markerCircle: {
+    backgroundColor: '#56018D',
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    minWidth: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  markerText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  
 });
+
