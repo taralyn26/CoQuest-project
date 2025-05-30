@@ -74,10 +74,12 @@ import { db } from './config';
   ): Promise<UserProfile[]> {
     const allUsers = await getAllUsers();
     
-    // Filter out current user if provided
+    // Filter out current user if provided (case-insensitive)
     let filteredUsers = allUsers;
     if (currentUserHandle) {
-      filteredUsers = allUsers.filter(user => user.handle !== currentUserHandle);
+      filteredUsers = allUsers.filter(user => 
+        user.handle.toLowerCase() !== currentUserHandle.toLowerCase()
+      );
     }
     
     // If no search term, return all users (except current user)

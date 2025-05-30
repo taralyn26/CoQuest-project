@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 
 import { useAuth } from '../src/AuthProvider';
-import { createGroup, searchUsers, type UserProfile } from './firebase/groupService';
+import { createGroup } from './firebase/groupService';
+import { searchUsers, type UserProfile } from './firebase/userService';
 
 const PURPLE = '#56018D';
 

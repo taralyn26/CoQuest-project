@@ -1,4 +1,4 @@
-// app/manage-groups.tsx (With Debugging)
+// app/manage-groups.tsx (Fixed JSX structure)
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -179,7 +179,7 @@ export default function ManageGroups() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       <View style={styles.headerRow}>
         <Pressable onPress={() => router.push('../profile')}>
           <Ionicons name="arrow-back" size={24} color="black" />
@@ -194,66 +194,68 @@ export default function ManageGroups() {
         <Text style={styles.createText}>Create New Group</Text>
       </TouchableOpacity>
 
-      {groups.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No groups yet</Text>
-          <Text style={styles.emptySubtext}>Create your first group to get started!</Text>
-        </View>
-      ) : (
-        groups.map((group) => {
-          const isExpanded = expanded === group.id;
-          return (
-            <View key={group.id} style={styles.card}>
-              <TouchableOpacity
-                onPress={() => toggleExpand(group.id)}
-                style={styles.cardHeader}
-              >
-                <View style={styles.titleRow}>
-                  <Text style={styles.groupName}>{group.name}</Text>
-                  {isExpanded && (
-                    <Pressable 
-                      style={styles.deleteButton}
-                      onPress={() => handleDeleteGroup(group.id, group.name)}
-                    >
-                      <Ionicons name="trash-outline" size={18} color="#dc3545" />
-                    </Pressable>
-                  )}
-                </View>
-                <Text style={styles.arrow}>{isExpanded ? '▲' : '▼'}</Text>
-              </TouchableOpacity>
-
-              {isExpanded && (
-                <View style={styles.cardBody}>
-                  <Text style={styles.memberCount}>
-                    {group.members.length} member{group.members.length === 1 ? '' : 's'}
-                  </Text>
-                  <View style={styles.memberRow}>
-                    {group.members.map((member) => (
-                      <View key={member.handle} style={styles.chip}>
-                        <Text style={styles.chipText}>{member.displayName}</Text>
-                      </View>
-                    ))}
+      <ScrollView style={styles.scrollView}>
+        {groups.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No groups yet</Text>
+            <Text style={styles.emptySubtext}>Create your first group to get started!</Text>
+          </View>
+        ) : (
+          groups.map((group) => {
+            const isExpanded = expanded === group.id;
+            return (
+              <View key={group.id} style={styles.card}>
+                <TouchableOpacity
+                  onPress={() => toggleExpand(group.id)}
+                  style={styles.cardHeader}
+                >
+                  <View style={styles.titleRow}>
+                    <Text style={styles.groupName}>{group.name}</Text>
+                    {isExpanded && (
+                      <Pressable 
+                        style={styles.deleteButton}
+                        onPress={() => handleDeleteGroup(group.id, group.name)}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="#dc3545" />
+                      </Pressable>
+                    )}
                   </View>
-                  <Text style={styles.createdAt}>
-                    Created: {group.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}
-                  </Text>
-                </View>
-              )}
-            </View>
-          );
-        })
-      )}
-    </ScrollView>
+                  <Text style={styles.arrow}>{isExpanded ? '▲' : '▼'}</Text>
+                </TouchableOpacity>
+
+                {isExpanded && (
+                  <View style={styles.cardBody}>
+                    <Text style={styles.memberCount}>
+                      {group.members.length} member{group.members.length === 1 ? '' : 's'}
+                    </Text>
+                    <View style={styles.memberRow}>
+                      {group.members.map((member) => (
+                        <View key={member.handle} style={styles.chip}>
+                          <Text style={styles.chipText}>{member.displayName}</Text>
+                        </View>
+                      ))}
+                    </View>
+                    <Text style={styles.createdAt}>
+                      Created: {group.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          })
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 24,
+    flex: 1,
+    paddingTop: 60, // Increased top padding for better positioning
     paddingHorizontal: 16,
     backgroundColor: 'white',
     paddingBottom: 40,
-    flexGrow: 1,
   },
   headerRow: {
     flexDirection: 'row',
@@ -277,11 +279,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  emptyState: {
+  scrollView: {
     flex: 1,
+  },
+  emptyState: {
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
+    marginTop: 40,
   },
   emptyText: {
     fontSize: 18,
