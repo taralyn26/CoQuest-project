@@ -36,7 +36,8 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
     }
     try {
       const cred = await signUp(email, password);
-      const handle = email.split('@')[0];
+      //const handle = email.split('@')[0];
+      const handle = email.split('@')[0].toLowerCase();
       await setDoc(doc(db, 'flp_names', handle), {
         first_name: firstName.trim(),
         last_name: lastName.trim(),

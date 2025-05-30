@@ -1,5 +1,7 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { getAuth } from 'firebase/auth';
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -11,6 +13,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { app } from '../firebase/config';
+
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
@@ -20,7 +26,6 @@ const badgeImage3 = require('../../assets/images/crown.png');
 const badgeImage4 = require('../../assets/images/adventure.webp');
 const badgeImage5 = require('../../assets/images/questionmark.jpeg');
 
-// Badge data
 const badgeList = [
   {
     title: 'Host',
@@ -71,22 +76,50 @@ export default function Profile() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<any>(null);
+  const [fullName, setFullName] = useState('');
+  const [handle, setHandle] = useState('');
 
   const toggleExpand = (name: string) => {
     setExpanded(expanded === name ? null : name);
   };
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const email = user.email || '';
+      //const handlePart = email.split('@')[0];
+      const handlePart = email.split('@')[0].toLowerCase();
+
+
+      try {
+        const ref = doc(db, 'flp_names', handlePart);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const data = snap.data();
+          setFullName(`${data.first_name} ${data.last_name}`);
+          setHandle(data['@']);
+        } else {
+          console.warn('Profile not found');
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.purpleBackground} />
         <View style={styles.curve} />
         <Image source={hostAvatar} style={styles.profileImage} />
       </View>
 
-      <Text style={styles.title}>Taralyn Nguyen</Text>
-      <Text style={styles.user}>@taralyn</Text>
+      <Text style={styles.title}>{fullName}</Text>
+      <Text style={styles.user}>@{handle}</Text>
 
       {/* COMMUNITY CARD */}
       <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
