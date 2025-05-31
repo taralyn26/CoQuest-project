@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, getFirestore } from 'firebase/firestore';
+//import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
@@ -13,7 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { app } from '../firebase/config';
+import Quest from '../../components/Quest'; // adjust the path if needed
+import { app, db } from '../firebase/config';
 
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -83,33 +85,118 @@ export default function Profile() {
     setExpanded(expanded === name ? null : name);
   };
 
+
+  
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndQuests = async () => {
       const user = auth.currentUser;
       if (!user) return;
-
+  
       const email = user.email || '';
-      //const handlePart = email.split('@')[0];
       const handlePart = email.split('@')[0].toLowerCase();
-
-
+  
       try {
-        const ref = doc(db, 'flp_names', handlePart);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          const data = snap.data();
-          setFullName(`${data.first_name} ${data.last_name}`);
-          setHandle(data['@']);
+        // Fetch profile info
+        const profileRef = doc(db, 'flp_names', handlePart);
+        const profileSnap = await getDoc(profileRef);
+        if (profileSnap.exists()) {
+          const profileData = profileSnap.data();
+          setFullName(`${profileData.first_name} ${profileData.last_name}`);
+          setHandle(profileData['@']);
         } else {
           console.warn('Profile not found');
         }
+  
+        // Fetch hosted quests
+        const userRef = doc(db, 'users', handlePart);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) return;
+  
+        const userData = userSnap.data();
+        const hosted = userData.hosted_quests || [];
+        const quests = await Promise.all(
+          hosted.map(async (q: any) => {
+            const id = typeof q === 'string' ? q : q.id;
+            const snap = await getDoc(doc(db, 'quests', id));
+            if (!snap.exists()) return null;
+            const quest = snap.data();
+            return { id, ...quest };
+          })
+        );
+  
+        const valid = quests.filter(Boolean) as { id: string; end_time?: { seconds: number } }[];
+        valid.sort((a, b) => (a.end_time?.seconds ?? 0) - (b.end_time?.seconds ?? 0));
+        setHostedQuests(valid);
       } catch (err) {
-        console.error('Error fetching profile:', err);
+        console.error('❌ Error in fetchProfileAndQuests:', err);
       }
     };
-
-    fetchProfile();
+  
+    fetchProfileAndQuests();
   }, []);
+  
+//   useEffect(() => {
+//     const fetchProfile = async () => {
+//       const user = auth.currentUser;
+//       if (!user) return;
+
+//       const email = user.email || '';
+//       //const handlePart = email.split('@')[0];
+//       const handlePart = email.split('@')[0].toLowerCase();
+
+
+//       try {
+//         const ref = doc(db, 'flp_names', handlePart);
+//         const snap = await getDoc(ref);
+//         if (snap.exists()) {
+//           const data = snap.data();
+//           setFullName(`${data.first_name} ${data.last_name}`);
+//           setHandle(data['@']);
+//         } else {
+//           console.warn('Profile not found');
+//         }
+//       } catch (err) {
+//         console.error('Error fetching profile:', err);
+//       }
+//     };
+
+//     fetchProfile();
+//   }, []);
+//   // add near the top of your Profile component:
+// const [hostedQuests, setHostedQuests] = useState<any[]>([]);
+
+// useEffect(() => {
+//   const fetchHostedQuests = async () => {
+//     try {
+//       const userRef = doc(db, 'users', 'test_user_001');
+//       const userSnap = await getDoc(userRef);
+//       if (!userSnap.exists()) return;
+
+//       const data = userSnap.data();
+//       const hosted = data.hosted_quests || [];
+//       const now = Date.now() / 1000;
+
+//       const quests = await Promise.all(
+//         hosted.map(async (q: any) => {
+//           const id = typeof q === 'string' ? q : q.id;
+//           const snap = await getDoc(doc(db, 'quests', id));
+//           if (!snap.exists()) return null;
+//           const quest = snap.data();
+//           return { id, ...quest };
+//         })
+//       );
+
+//       const valid = quests.filter(Boolean) as { id: string; end_time?: { seconds: number } }[];
+//       valid.sort((a, b) => (a.end_time?.seconds ?? 0) - (b.end_time?.seconds ?? 0));
+//       setHostedQuests(valid);
+//     } catch (err) {
+//       console.error('❌ Failed to load hosted quests on profile:', err);
+//     }
+//   };
+
+//   fetchHostedQuests();
+// }, []);
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.header}>
@@ -188,20 +275,23 @@ export default function Profile() {
         <Text style={styles.manageButtonText}>Manage Groups</Text>
       </TouchableOpacity>
 
-      {/* HOSTED QUESTS */}
-      <Text style={styles.sectionTitle}>Hosted Quests:</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.questScroll}
-      >
-        {[...Array(3)].map((_, i) => (
-          <View key={i} style={styles.questCard}>
-            <Image source={badgeImage} style={{ width: 100, height: 100 }} />
-            <Text style={{ textAlign: 'center' }}>Mall run</Text>
-          </View>
-        ))}
-      </ScrollView>
+{/* HOSTED QUESTS */}
+<Text style={styles.sectionTitle}>Hosted Quests:</Text>
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.questScroll}
+>
+  {hostedQuests.map((q) => (
+    <View key={q.id} style={styles.questCard}>
+      <Quest id={q.id} from="profile" />
+    </View>
+  ))}
+</ScrollView>
+
+
+
+
 
       {/* BADGES */}
       <Text style={styles.sectionTitle}>My Badges:</Text>
@@ -435,4 +525,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
   },
+  questGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  questWrapper: {
+    width: '48%',
+    marginBottom: 16,
+  },
+  
 });
