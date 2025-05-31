@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 //import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
@@ -18,7 +18,7 @@ import Quest from '../../components/Quest'; // adjust the path if needed
 import { app, db } from '../firebase/config';
 
 const auth = getAuth(app);
-const db = getFirestore(app);
+//const db = getFirestore(app);
 
 const { width } = Dimensions.get('window');
 const hostAvatar = require('../../assets/images/pic.png');
@@ -81,9 +81,16 @@ export default function Profile() {
   const [fullName, setFullName] = useState('');
   const [handle, setHandle] = useState('');
 
+
+
+
+
   const toggleExpand = (name: string) => {
     setExpanded(expanded === name ? null : name);
   };
+
+  const [hostedQuests, setHostedQuests] = useState<any[]>([]);
+
 
 
   
