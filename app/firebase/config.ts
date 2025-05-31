@@ -1,4 +1,5 @@
 // app/firebase/config.ts
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
 import {
   getReactNativePersistence,
@@ -19,6 +20,7 @@ const firebaseConfig = {
 
 
 const firebaseApp = initializeApp(firebaseConfig);
+export const db = getFirestore(firebaseApp);
 
 // We expose an Auth instance with **persistent** storage
 export const auth: Auth = initializeAuth(firebaseApp, {
