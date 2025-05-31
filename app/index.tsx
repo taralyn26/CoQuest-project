@@ -1,13 +1,12 @@
 // index.tsx
-import 'react-native-get-random-values';
 import React, { useEffect, useState } from 'react';
+import 'react-native-get-random-values';
 // app/index.tsx
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+//import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 
-import { AuthProvider, useAuth } from '../src/AuthProvider';
 import { useAuth } from '../src/AuthProvider';
 import Login from './login';
 import SignUp from './signup';
