@@ -1,3 +1,4 @@
+import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
@@ -9,7 +10,9 @@ import {
   View,
 } from 'react-native';
 import Quest from '../../components/Quest';
-import { db } from '../firebase/config';
+import { app, db } from '../firebase/config';
+
+const auth = getAuth(app);
 
 const filters = ['Upcoming', 'Hosting', 'Past'];
 
@@ -22,8 +25,14 @@ export default function QuestDashboard() {
 
   useEffect(() => {
     const fetchQuests = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+  
+      const email = user.email || '';
+      const handlePart = email.split('@')[0].toLowerCase();
+
       try {
-        const ref = doc(db, 'users', 'test_user_001');
+        const ref = doc(db, 'flp_names', handlePart);
         const snap = await getDoc(ref);
         if (!snap.exists()) return;
 
@@ -163,11 +172,4 @@ const styles = StyleSheet.create({
     color: '#56018D',
   },
 });
-
-
-
-
-
-
-
 

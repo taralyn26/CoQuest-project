@@ -114,13 +114,14 @@ export default function Profile() {
           console.warn('Profile not found');
         }
   
-        // Fetch hosted quests
-        const userRef = doc(db, 'users', handlePart);
+        // ✅ Fetch hosted quests from flp_names instead of users
+        const userRef = doc(db, 'flp_names', handlePart);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) return;
   
         const userData = userSnap.data();
         const hosted = userData.hosted_quests || [];
+  
         const quests = await Promise.all(
           hosted.map(async (q: any) => {
             const id = typeof q === 'string' ? q : q.id;
@@ -141,6 +142,7 @@ export default function Profile() {
   
     fetchProfileAndQuests();
   }, []);
+  
   
 //   useEffect(() => {
 //     const fetchProfile = async () => {
