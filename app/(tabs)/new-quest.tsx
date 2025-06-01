@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
-import React, { useState } from 'react';
+import { doc, updateDoc, arrayUnion, addDoc, collection, Timestamp, getDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -13,9 +13,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { db } from '../firebase/config';
+import { auth, db } from '../firebase/config';
 
-const GROUPS = ['Study Buddies', 'Party People'];
 const PURPLE = '#56018D';
 const LIGHTGRAY = '#F2F7FD';
 
@@ -34,9 +33,44 @@ export default function NewQuest() {
   const [photoAdded, setPhotoAdded] = useState(false);
   const [visibility, setVisibility] = useState('All Campus');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userGroups, setUserGroups] = useState<{ id: string; name: string }[]>([]);
 
   const hostAvatar = require('../../assets/images/pic.png');
-  const hostName = 'Taralyn';
+  const currentUser = auth.currentUser;
+  const email = currentUser.displayName || currentUser.email || currentUser.uid;
+  const pre_hostName = email.split('@')[0];
+  const hostName = pre_hostName.charAt(0).toUpperCase() + pre_hostName.slice(1);
+
+  useEffect(() => {
+    const fetchUserGroups = async () => {
+      try {
+        const userRef = doc(db, 'flp_names', hostName);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) return;
+
+        const data = userSnap.data();
+        const groupIds: string[] = data.groups || [];
+
+        const groupDocs = await Promise.all(
+          groupIds.map(async (id) => {
+            const groupRef = doc(db, 'groups', id);
+            const groupSnap = await getDoc(groupRef);
+            if (groupSnap.exists()) {
+              const groupData = groupSnap.data();
+              return { id, name: groupData.name || id };
+            }
+            return null;
+          })
+        );
+
+        setUserGroups(groupDocs.filter(Boolean) as { id: string; name: string }[]);
+      } catch (err) {
+        console.error('Error fetching group names:', err);
+      }
+    };
+
+    fetchUserGroups();
+  }, []);
 
   const whenOptions = [
     { key: 'now', label: 'Now' },
@@ -98,7 +132,7 @@ export default function NewQuest() {
         : parseInt(durationOption);
       const endTime = new Date(startTime.getTime() + duration * 60000);
 
-      await addDoc(collection(db, 'quests'), {
+      const questRef = await addDoc(collection(db, 'quests'), {
         name: quest,
         location: coordinates,
         groupid: visibility,
@@ -106,6 +140,50 @@ export default function NewQuest() {
         when: Timestamp.fromDate(startTime),
         end_time: Timestamp.fromDate(endTime),
       });
+
+      const userRef = doc(db, 'flp_names', hostName);
+      console.log('Updating host:', hostName, 'with quest ID:', questRef.id);
+      await updateDoc(userRef, {
+        hosted_quests: arrayUnion(questRef.id),
+      });
+      if (visibility !== 'All Campus') {
+        try {
+          console.log('Visibility is restricted to group:', visibility);
+          const matchedGroup = userGroups.find(g => g.name === visibility);
+        if (!matchedGroup) {
+          console.warn('No matching group found for name:', visibility);
+          return;
+        }
+        const groupRef = doc(db, 'groups', matchedGroup.id);
+          const groupSnap = await getDoc(groupRef);
+      
+          if (groupSnap.exists()) {
+            const groupData = groupSnap.data();
+            const memberHandles = groupData.memberHandles || [];
+      
+            console.log('Fetched group members:', memberHandles);
+      
+            await Promise.all(
+              memberHandles.map(async (handle: string) => {
+                const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
+                const memberRef = doc(db, 'flp_names', capitalizedHandle);
+      
+                console.log(`Updating member: ${capitalizedHandle} with quest ID: ${questRef.id}`);
+      
+                await updateDoc(memberRef, {
+                  display_quests: arrayUnion(questRef.id),
+                });
+              })
+            );
+      
+            console.log('Successfully updated all group members with quest ID.');
+          } else {
+            console.warn('Group document not found:', visibility);
+          }
+        } catch (err) {
+          console.error('Error updating display_quests for group members:', err);
+        }
+      }
 
       Alert.alert('Quest Posted!', 'Your quest has been broadcast.');
       router.push('/(tabs)/map');
@@ -296,7 +374,7 @@ export default function NewQuest() {
 
           {dropdownOpen && (
             <View style={styles.dropdownList}>
-              {['All Campus', ...GROUPS].map(g => (
+              {['All Campus', ...userGroups.map(g => g.name)].map((g) => (
                 <Pressable
                   key={g}
                   style={[
