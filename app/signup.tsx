@@ -44,6 +44,10 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         "@": handle,
+        display_quests: [],
+        groups: [],
+        hosted_quests: [],
+        joined_quests: [],
       });
       
       onSignUp();

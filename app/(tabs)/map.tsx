@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { auth, db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -10,8 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-import { db } from '../firebase/config';
+import MapView, { Marker, Callout, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 
 export default function Map() {
   const router = useRouter();
@@ -31,27 +31,30 @@ export default function Map() {
   useEffect(() => {
     const fetchQuests = async () => {
       try {
-        const ref = doc(db, 'users', 'test_user_001');
+        const email = auth.currentUser?.email || '';
+        const handle = email.split('@')[0];
+        const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
+        const ref = doc(db, 'flp_names', capitalizedHandle);
         const snap = await getDoc(ref);
         if (!snap.exists()) return;
-  
+
         const data = snap.data();
         const display = data.display_quests || [];
         const hosted = data.hosted_quests || [];
         const all = [...display, ...hosted].map((q: any) =>
           typeof q === 'string' ? q : q.id
         );
-  
+
         const now = Date.now() / 1000;
         const results = await Promise.all(
           all.map(async (id) => {
             const questSnap = await getDoc(doc(db, 'quests', id));
             if (!questSnap.exists()) return null;
-  
+
             const quest = questSnap.data();
             const end = quest?.end_time?.seconds;
             const loc = quest?.location;
-  
+
             if (
               typeof end !== 'number' ||
               end <= now ||
@@ -62,11 +65,11 @@ export default function Map() {
               console.log(`⚠️ Skipping quest ${id} due to missing/invalid data`);
               return null;
             }
-  
+
             return { id, ...quest };
           })
         );
-  
+
         const filtered = results.filter(Boolean) as any[];
         console.log('✅ Loaded quests:', filtered.map((q) => q.name));
         setQuests(filtered);
@@ -74,10 +77,9 @@ export default function Map() {
         console.error('❌ Failed to load quests for map:', err);
       }
     };
-  
+
     fetchQuests();
   }, []);
-  
 
   const openPopup = (quest: any) => {
     setSelectedQuest(quest);
@@ -115,18 +117,20 @@ export default function Map() {
       >
         {quests.map((quest) => (
           <Marker
-          key={quest.id}
-          coordinate={{
-            latitude: quest.location.latitude,
-            longitude: quest.location.longitude,
-          }}
-          onPress={() => openPopup(quest)}
-        >
-          <View style={styles.markerCircle}>
-            <Text style={styles.markerText}>{quest.name}</Text>
-          </View>
-        </Marker>
-        
+            key={quest.id}
+            coordinate={{
+              latitude: quest.location.latitude,
+              longitude: quest.location.longitude,
+            }}
+          >
+            <Ionicons name="location-sharp" size={40} color="#56018D" />
+            <Callout onPress={() => {
+              openPopup(quest);
+            }}>
+              <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
+              <Text>Tap for more info</Text>
+            </Callout>
+          </Marker>
         ))}
       </MapView>
 
@@ -181,20 +185,6 @@ const PURPLE = '#56018D';
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
-  customMarker: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: PURPLE,
-    backgroundColor: '#FFF',
-  },
-  markerImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
   calloutBox: {
     position: 'absolute',
     bottom: 180,
@@ -267,22 +257,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  markerCircle: {
-    backgroundColor: '#56018D',
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    minWidth: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  
-  markerText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  
 });
-

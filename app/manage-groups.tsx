@@ -106,7 +106,10 @@ export default function ManageGroups() {
     console.log('📧 User email:', user.email);
     console.log('🆔 User UID:', user.uid);
     
-    const currentHandle = user.email?.split('@')[0];
+    
+    const pre_currentHandle = user.email?.split('@')[0];
+    const currentHandle = pre_currentHandle.charAt(0).toUpperCase() + pre_currentHandle.slice(1);
+
     console.log('📧 Extracted handle:', currentHandle);
     
     if (!currentHandle) {
