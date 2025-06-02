@@ -65,6 +65,10 @@ export default function Quest({ id, from = 'quest-dashboard' }: { id: string, fr
         </View>
       </View>
       <Text style={styles.title}>{quest.name}</Text>
+      {quest.description && (
+      <Text style={styles.description}>{quest.description}</Text>
+    )}
+
     </Pressable>
   );
 }
@@ -110,6 +114,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  description: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
+  
 });
 
 

@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { auth, db } from '../firebase/config';
 
 const PURPLE = '#56018D';
 const questImage = require('../../assets/images/mall.png');
@@ -28,6 +29,11 @@ export default function QuestDetailPage() {
     const handle = email.split('@')[0];
     return handle.charAt(0).toUpperCase() + handle.slice(1);
   })();
+
+  const currentUser = auth.currentUser;
+  const handle = currentUser?.email?.split('@')[0].toLowerCase();
+  const isHost = quest?.host?.[0]?.toLowerCase() === handle;
+
 
   useEffect(() => {
     const fetchQuest = async () => {
@@ -171,11 +177,10 @@ export default function QuestDetailPage() {
             {isRSVPed ? 'RSVP’d' : 'RSVP'}
           </Text>
         </Pressable>
-
+        
         <Text style={styles.subheader}>
           {participants.length} Quester{participants.length !== 1 ? 's' : ''}
         </Text>
-
         <View style={styles.bubbleRow}>
           {participants.map((name) => (
             <View key={name} style={styles.bubble}>

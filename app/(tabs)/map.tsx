@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { auth, db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -11,7 +10,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import MapView, { Callout, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import { auth, db } from '../firebase/config';
 
 export default function Map() {
   const router = useRouter();
@@ -33,8 +33,11 @@ export default function Map() {
       try {
         const email = auth.currentUser?.email || '';
         const handle = email.split('@')[0];
-        const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
-        const ref = doc(db, 'flp_names', capitalizedHandle);
+        // const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
+        // const ref = doc(db, 'flp_names', capitalizedHandle);
+        const lowercaseHandle = handle.toLowerCase();
+        const ref = doc(db, 'flp_names', lowercaseHandle);
+
         const snap = await getDoc(ref);
         if (!snap.exists()) return;
 
@@ -156,6 +159,10 @@ export default function Map() {
             <Text style={styles.calloutDesc}>
               {selectedQuest.description || 'No description provided.'}
             </Text>
+
+            {/* <Text style={styles.calloutDesc}>
+              {selectedQuest.description || 'No description provided.'}
+            </Text> */}
 
             <Pressable
               style={styles.calloutButton}

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { doc, updateDoc, arrayUnion, addDoc, collection, Timestamp, getDoc } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { auth, db } from '../firebase/config';
+
 
 const PURPLE = '#56018D';
 const LIGHTGRAY = '#F2F7FD';
@@ -38,8 +39,12 @@ export default function NewQuest() {
   const hostAvatar = require('../../assets/images/pic.png');
   const currentUser = auth.currentUser;
   const email = currentUser.displayName || currentUser.email || currentUser.uid;
-  const pre_hostName = email.split('@')[0];
-  const hostName = pre_hostName.charAt(0).toUpperCase() + pre_hostName.slice(1);
+  const [description, setDescription] = useState('');
+
+  // const pre_hostName = email.split('@')[0];
+  // const hostName = pre_hostName.charAt(0).toUpperCase() + pre_hostName.slice(1);
+  const hostName = (email.split('@')[0] || '').toLowerCase();
+
 
   useEffect(() => {
     const fetchUserGroups = async () => {
@@ -276,7 +281,6 @@ export default function NewQuest() {
               <Ionicons name="search" size={18} color="white" />
             </Pressable>
           </View>
-
 
         {suggestions.length > 0 && (
           <View style={styles.dropdownList}>

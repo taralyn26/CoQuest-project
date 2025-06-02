@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import Quest from '../../components/Quest';
-import { db } from '../firebase/config';
+import { auth, db } from '../firebase/config';
 
 const filters = ['Upcoming', 'Hosting', 'Past'];
 
@@ -23,7 +23,12 @@ export default function QuestDashboard() {
   useEffect(() => {
     const fetchQuests = async () => {
       try {
-        const ref = doc(db, 'users', 'test_user_001');
+        //const ref = doc(db, 'users', 'test_user_001');
+
+        const currentUser = auth.currentUser;
+        const email = currentUser?.email || '';
+        const handle = email.split('@')[0].toLowerCase();
+        const ref = doc(db, 'flp_names', handle);
         const snap = await getDoc(ref);
         if (!snap.exists()) return;
 
