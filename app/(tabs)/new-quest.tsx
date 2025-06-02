@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { doc, updateDoc, arrayUnion, addDoc, collection, Timestamp, getDoc } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { auth, db } from '../firebase/config';
+
 
 const PURPLE = '#56018D';
 const LIGHTGRAY = '#F2F7FD';
@@ -38,8 +39,12 @@ export default function NewQuest() {
   const hostAvatar = require('../../assets/images/pic.png');
   const currentUser = auth.currentUser;
   const email = currentUser.displayName || currentUser.email || currentUser.uid;
-  const pre_hostName = email.split('@')[0];
-  const hostName = pre_hostName.charAt(0).toUpperCase() + pre_hostName.slice(1);
+  const [description, setDescription] = useState('');
+
+  // const pre_hostName = email.split('@')[0];
+  // const hostName = pre_hostName.charAt(0).toUpperCase() + pre_hostName.slice(1);
+  const hostName = (email.split('@')[0] || '').toLowerCase();
+
 
   useEffect(() => {
     const fetchUserGroups = async () => {
@@ -139,6 +144,7 @@ export default function NewQuest() {
         host: [hostName],
         when: Timestamp.fromDate(startTime),
         end_time: Timestamp.fromDate(endTime),
+        description, 
       });
 
       const userRef = doc(db, 'flp_names', hostName);
@@ -210,6 +216,16 @@ export default function NewQuest() {
           value={quest}
           onChangeText={setQuest}
         />
+
+        <Text style={styles.label}>Description (optional)</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="e.g. Bring snacks and a blanket"
+          placeholderTextColor="#999"
+          value={description}
+          onChangeText={setDescription}
+        />
+
 
         <Text style={styles.label}>Where</Text>
         <View style={styles.locationContainer}>

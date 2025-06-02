@@ -10,7 +10,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { db } from '../firebase/config';
+import { auth, db } from '../firebase/config';
+
 
 const PURPLE = '#56018D';
 const questImage = require('../../assets/images/mall.png');
@@ -19,6 +20,11 @@ export default function QuestDetailPage() {
   const router = useRouter();
   const { id, from } = useLocalSearchParams();
   const [quest, setQuest] = useState<any>(null);
+
+  const currentUser = auth.currentUser;
+  const handle = currentUser?.email?.split('@')[0].toLowerCase();
+  const isHost = quest?.host?.[0]?.toLowerCase() === handle;
+
 
   useEffect(() => {
     const fetchQuest = async () => {
@@ -96,6 +102,17 @@ export default function QuestDetailPage() {
         <Pressable style={styles.rsvpButton}>
           <Text style={styles.rsvpText}>RSVP</Text>
         </Pressable>
+
+        {isHost && (
+        <Pressable
+          style={[styles.rsvpButton, { backgroundColor: '#EEE', marginTop: 8 }]}
+          onPress={() => router.push(`/edit_quest?id=${id}`)}
+        >
+          <Text style={[styles.rsvpText, { color: '#56018D' }]}>Edit Quest</Text>
+        </Pressable>
+      )}
+
+
 
         <Text style={styles.subheader}>2 Questers</Text>
         <View style={styles.bubbleRow}>

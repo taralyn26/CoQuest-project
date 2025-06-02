@@ -39,7 +39,7 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
       await signUp(email, password, firstName, lastName);
       
       // Also create the flp_names document (for your existing functionality)
-      const handle = email.split('@')[0];
+      const handle = email.split('@')[0].toLowerCase();
       await setDoc(doc(db, 'flp_names', handle), {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
@@ -50,7 +50,9 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
         joined_quests: [],
       });
       
-      onSignUp();
+      //onSignUp();
+      onSignUp?.();
+
     } catch (e: any) {
       alert(e.message);
     }

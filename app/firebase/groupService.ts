@@ -1,6 +1,7 @@
 import {
   Timestamp,
   addDoc,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -11,7 +12,6 @@ import {
   serverTimestamp,
   updateDoc,
   where,
-  arrayUnion,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './config';
@@ -47,12 +47,13 @@ export async function createGroup(
     throw new Error('At least one member is required');
   }
 
-  const capitalizedOwner = ownerHandle.charAt(0).toUpperCase() + ownerHandle.slice(1);
+  //const capitalizedOwner = ownerHandle.charAt(0).toUpperCase() + ownerHandle.slice(1);
+  const lowercaseOwner = ownerHandle.toLowerCase();
 
   const groupsRef = collection(db, 'groups');
   const groupData = {
     name: name.trim(),
-    ownerHandle: capitalizedOwner,
+    ownerHandle: lowercaseOwner,
     memberHandles,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -61,7 +62,7 @@ export async function createGroup(
   const docRef = await addDoc(groupsRef, groupData);
 
   // Add group ID to flp_names under capitalized owner handle
-  const userRef = doc(db, 'flp_names', capitalizedOwner);
+  const userRef = doc(db, 'flp_names', lowercaseOwner);
   await updateDoc(userRef, {
     groups: arrayUnion(docRef.id),
   });
