@@ -1,8 +1,7 @@
 import { useRouter } from 'expo-router';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-//import { doc, getDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -14,14 +13,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Quest from '../../components/Quest'; // adjust the path if needed
+import Quest from '../../components/Quest';
 import { app, db } from '../firebase/config';
 
 const auth = getAuth(app);
-//const db = getFirestore(app);
-
 const { width } = Dimensions.get('window');
-const hostAvatar = require('../../assets/images/pic.png');
+const PURPLE = '#56018D';
+
 const badgeImage = require('../../assets/images/host.png');
 const badgeImage2 = require('../../assets/images/compass.jpg');
 const badgeImage3 = require('../../assets/images/crown.png');
@@ -29,49 +27,12 @@ const badgeImage4 = require('../../assets/images/adventure.webp');
 const badgeImage5 = require('../../assets/images/questionmark.jpeg');
 
 const badgeList = [
-  {
-    title: 'Host',
-    description: "You've hosted 3 quests!",
-    image: badgeImage,
-    locked: false,
-  },
-  {
-    title: 'Connector',
-    description: 'You’ve invited 5 friends to join quests!',
-    image: badgeImage2,
-    locked: false,
-  },
-  {
-    title: 'Explorer',
-    description: 'You’ve joined 10 different types of quests!',
-    image: badgeImage4,
-    locked: false,
-  },
-  {
-    title: 'Legend',
-    description: 'Host 10 quests to earn this badge.',
-    image: badgeImage3,
-    locked: false,
-    progress: 0.65,
-  },
-  {
-    title: 'Mystery',
-    description: 'Complete 5 secret quests to unlock this badge.',
-    image: badgeImage5,
-    locked: true,
-  },
-  {
-    title: 'Secret Quest',
-    description: 'Find and complete a hidden quest on campus.',
-    image: badgeImage5,
-    locked: true,
-  },
-];
-
-const mockGroups = [
-  { name: 'Study Buddies', members: ['Isaias', 'Jad', 'Aya'] },
-  { name: 'party people', members: ['Emi', 'Varsha', '+5'] },
-  { name: 'All Friends', members: ['Nico', 'Yujina', '+50'] },
+  { title: 'Host', description: "You've hosted 3 quests!", image: badgeImage, locked: false },
+  { title: 'Connector', description: 'You’ve invited 5 friends to join quests!', image: badgeImage2, locked: false },
+  { title: 'Explorer', description: 'You’ve joined 10 different types of quests!', image: badgeImage4, locked: false },
+  { title: 'Legend', description: 'Host 10 quests to earn this badge.', image: badgeImage3, locked: false, progress: 0.65 },
+  { title: 'Mystery', description: 'Complete 5 secret quests to unlock this badge.', image: badgeImage5, locked: true },
+  { title: 'Secret Quest', description: 'Find and complete a hidden quest on campus.', image: badgeImage5, locked: true },
 ];
 
 export default function Profile() {
@@ -80,47 +41,81 @@ export default function Profile() {
   const [selectedBadge, setSelectedBadge] = useState<any>(null);
   const [fullName, setFullName] = useState('');
   const [handle, setHandle] = useState('');
-
-
-
-
+  const [hostedQuests, setHostedQuests] = useState<any[]>([]);
+  const [userGroups, setUserGroups] = useState<{ name: string; members: string[] }[]>([]);
 
   const toggleExpand = (name: string) => {
     setExpanded(expanded === name ? null : name);
   };
 
-  const [hostedQuests, setHostedQuests] = useState<any[]>([]);
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((word) => word[0]?.toUpperCase())
+      .join('')
+      .slice(0, 2);
+  };
 
+  const initials = useMemo(() => {
+    if (!fullName) return '';
+    const result = getInitials(fullName);
+    console.log('✅ Initials computed:', result);
+    return result;
+  }, [fullName]);
 
+  const randomColor = ['#FFD166', '#06D6A0', '#EF476F', '#118AB2', '#8338EC'][Math.floor(Math.random() * 5)];
 
-  
   useEffect(() => {
     const fetchProfileAndQuests = async () => {
       const user = auth.currentUser;
       if (!user) return;
-  
+
       const email = user.email || '';
-      const handlePart = email.split('@')[0].toLowerCase();
-  
+      const pre_handlePart = email.split('@')[0];
+      const handlePart = pre_handlePart.charAt(0).toUpperCase() + pre_handlePart.slice(1);
+      console.log('🔠 Capitalized handlePart:', handlePart);
+
       try {
-        // Fetch profile info
         const profileRef = doc(db, 'flp_names', handlePart);
         const profileSnap = await getDoc(profileRef);
+
         if (profileSnap.exists()) {
           const profileData = profileSnap.data();
+          console.log('📄 Profile data:', profileData);
           setFullName(`${profileData.first_name} ${profileData.last_name}`);
           setHandle(profileData['@']);
+
+          // Fetch group IDs and resolve from 'groups' collection
+          const groupIds = Array.isArray(profileData.groups) ? profileData.groups.slice(0, 3) : [];
+          console.log('🆔 Group IDs from flp_names:', groupIds);
+
+          const groupDocs = await Promise.all(
+            groupIds.map(async (id: string) => {
+              const snap = await getDoc(doc(db, 'groups', id));
+              if (!snap.exists()) return null;
+              const group = snap.data();
+              return { name: group.name, members: group.members || [] };
+            })
+          );
+
+          const validGroups = groupDocs.filter(Boolean);
+          console.log('📘 Loaded groups:', validGroups);
+          setUserGroups(validGroups);
         } else {
-          console.warn('Profile not found');
+          console.warn('⚠️ Profile not found in flp_names');
         }
-  
-        // Fetch hosted quests
+
         const userRef = doc(db, 'users', handlePart);
         const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) return;
-  
+        if (!userSnap.exists()) {
+          console.warn('⚠️ User data not found in users');
+          return;
+        }
+
         const userData = userSnap.data();
         const hosted = userData.hosted_quests || [];
+        console.log('📚 Hosted quest IDs:', hosted);
+
         const quests = await Promise.all(
           hosted.map(async (q: any) => {
             const id = typeof q === 'string' ? q : q.id;
@@ -130,137 +125,47 @@ export default function Profile() {
             return { id, ...quest };
           })
         );
-  
+
         const valid = quests.filter(Boolean) as { id: string; end_time?: { seconds: number } }[];
         valid.sort((a, b) => (a.end_time?.seconds ?? 0) - (b.end_time?.seconds ?? 0));
         setHostedQuests(valid);
+        console.log('✅ Valid hosted quests:', valid);
       } catch (err) {
         console.error('❌ Error in fetchProfileAndQuests:', err);
       }
     };
-  
+
     fetchProfileAndQuests();
   }, []);
-  
-//   useEffect(() => {
-//     const fetchProfile = async () => {
-//       const user = auth.currentUser;
-//       if (!user) return;
-
-//       const email = user.email || '';
-//       //const handlePart = email.split('@')[0];
-//       const handlePart = email.split('@')[0].toLowerCase();
-
-
-//       try {
-//         const ref = doc(db, 'flp_names', handlePart);
-//         const snap = await getDoc(ref);
-//         if (snap.exists()) {
-//           const data = snap.data();
-//           setFullName(`${data.first_name} ${data.last_name}`);
-//           setHandle(data['@']);
-//         } else {
-//           console.warn('Profile not found');
-//         }
-//       } catch (err) {
-//         console.error('Error fetching profile:', err);
-//       }
-//     };
-
-//     fetchProfile();
-//   }, []);
-//   // add near the top of your Profile component:
-// const [hostedQuests, setHostedQuests] = useState<any[]>([]);
-
-// useEffect(() => {
-//   const fetchHostedQuests = async () => {
-//     try {
-//       const userRef = doc(db, 'users', 'test_user_001');
-//       const userSnap = await getDoc(userRef);
-//       if (!userSnap.exists()) return;
-
-//       const data = userSnap.data();
-//       const hosted = data.hosted_quests || [];
-//       const now = Date.now() / 1000;
-
-//       const quests = await Promise.all(
-//         hosted.map(async (q: any) => {
-//           const id = typeof q === 'string' ? q : q.id;
-//           const snap = await getDoc(doc(db, 'quests', id));
-//           if (!snap.exists()) return null;
-//           const quest = snap.data();
-//           return { id, ...quest };
-//         })
-//       );
-
-//       const valid = quests.filter(Boolean) as { id: string; end_time?: { seconds: number } }[];
-//       valid.sort((a, b) => (a.end_time?.seconds ?? 0) - (b.end_time?.seconds ?? 0));
-//       setHostedQuests(valid);
-//     } catch (err) {
-//       console.error('❌ Failed to load hosted quests on profile:', err);
-//     }
-//   };
-
-//   fetchHostedQuests();
-// }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.header}>
         <View style={styles.purpleBackground} />
         <View style={styles.curve} />
-        <Image source={hostAvatar} style={styles.profileImage} />
+        <View style={[styles.initialsCircle, { backgroundColor: randomColor }]}>
+          {fullName ? (
+            <Text style={styles.initialsText}>{initials}</Text>
+          ) : (
+            <Text style={styles.initialsText}>?</Text>
+          )}
+        </View>
       </View>
 
       <Text style={styles.title}>{fullName}</Text>
       <Text style={styles.user}>@{handle}</Text>
 
-      {/* COMMUNITY CARD */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-        <View style={styles.card}>
-          <TouchableOpacity
-            onPress={() => toggleExpand('Stanford Community')}
-            style={styles.cardHeader}
-          >
-            <View>
-              <Text style={styles.groupName}>Stanford Community 🌲</Text>
-              <Text style={styles.memberCount}>1902 members</Text>
-            </View>
-            <Text style={{ fontSize: 20 }}>
-              {expanded === 'Stanford Community' ? '▲' : '▼'}
-            </Text>
-          </TouchableOpacity>
-
-          {expanded === 'Stanford Community' && (
-            <View style={styles.cardBody}>
-              <View style={styles.memberRow}>
-                {['Aya', 'Isa', '+1900'].map((m, i) => (
-                  <View key={i} style={styles.chip}>
-                    <Text style={styles.chipText}>{m}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* GROUPS */}
       <Text style={styles.sectionTitle}>Recent Groups:</Text>
       <View style={{ paddingHorizontal: 16 }}>
-        {mockGroups.map((group, idx) => (
+        {userGroups.map((group, idx) => (
           <View key={idx} style={styles.card}>
-            <TouchableOpacity
-              onPress={() => toggleExpand(group.name)}
-              style={styles.cardHeader}
-            >
+            <TouchableOpacity onPress={() => toggleExpand(group.name)} style={styles.cardHeader}>
               <View>
                 <Text style={styles.groupName}>{group.name}</Text>
                 <Text style={styles.memberCount}>{group.members.length} members</Text>
               </View>
               <Text style={{ fontSize: 20 }}>{expanded === group.name ? '▲' : '▼'}</Text>
             </TouchableOpacity>
-
             {expanded === group.name && (
               <View style={styles.cardBody}>
                 <View style={styles.memberRow}>
@@ -275,42 +180,25 @@ export default function Profile() {
           </View>
         ))}
       </View>
-      <TouchableOpacity
-        style={styles.manageButton}
-        onPress={() => router.push('/manage-groups')}
-      >
+
+      <TouchableOpacity style={styles.manageButton} onPress={() => router.push('/manage-groups')}>
         <Text style={styles.manageButtonText}>Manage Groups</Text>
       </TouchableOpacity>
 
-{/* HOSTED QUESTS */}
-<Text style={styles.sectionTitle}>Hosted Quests:</Text>
-<ScrollView
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={styles.questScroll}
->
-  {hostedQuests.map((q) => (
-    <View key={q.id} style={styles.questCard}>
-      <Quest id={q.id} from="profile" />
-    </View>
-  ))}
-</ScrollView>
+      <Text style={styles.sectionTitle}>Hosted Quests:</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.questScroll}>
+        {hostedQuests.map((q) => (
+          <View key={q.id} style={styles.questCard}>
+            <Quest id={q.id} from="profile" />
+          </View>
+        ))}
+      </ScrollView>
 
-
-
-
-
-      {/* BADGES */}
       <Text style={styles.sectionTitle}>My Badges:</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.questScroll}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.questScroll}>
         {badgeList.map((badge, idx) => (
           <TouchableOpacity key={idx} onPress={() => setSelectedBadge(badge)}>
             <View style={[styles.badgeCard, badge.locked && styles.locked]}>
-              <Image source={badge.image} style={styles.badgeImage} />
               <Text style={styles.badgeTitle}>{badge.title}</Text>
               {badge.progress !== undefined && (
                 <View style={styles.progressBarBackground}>
@@ -322,13 +210,7 @@ export default function Profile() {
         ))}
       </ScrollView>
 
-      {/* MODAL */}
-      <Modal
-        visible={!!selectedBadge}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSelectedBadge(null)}
-      >
+      <Modal visible={!!selectedBadge} transparent animationType="fade" onRequestClose={() => setSelectedBadge(null)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <Pressable style={styles.modalClose} onPress={() => setSelectedBadge(null)}>
@@ -348,6 +230,7 @@ export default function Profile() {
   );
 }
 
+// styles (unchanged from previous version)
 const styles = StyleSheet.create({
   scrollContainer: { paddingBottom: 40 },
   header: {
@@ -359,7 +242,7 @@ const styles = StyleSheet.create({
   },
   purpleBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'purple',
+    backgroundColor: PURPLE,
     zIndex: 1,
   },
   curve: {
@@ -372,15 +255,22 @@ const styles = StyleSheet.create({
     borderTopRightRadius: width / 2,
     zIndex: 2,
   },
-  profileImage: {
+  initialsCircle: {
     position: 'absolute',
     bottom: 30,
-    width: 150,
-    height: 150,
-    borderRadius: 100,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 3,
     borderWidth: 4,
     borderColor: 'white',
+  },
+  initialsText: {
+    fontSize: 42,
+    color: 'white',
+    fontWeight: 'bold',
   },
   title: {
     fontSize: 24,
@@ -405,7 +295,7 @@ const styles = StyleSheet.create({
   manageButton: {
     marginTop: 20,
     alignSelf: 'center',
-    backgroundColor: 'purple',
+    backgroundColor: PURPLE,
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 999,
@@ -432,12 +322,6 @@ const styles = StyleSheet.create({
     width: 100,
     elevation: 2,
   },
-  badgeImage: {
-    width: 50,
-    height: 50,
-    marginBottom: 6,
-    resizeMode: 'contain',
-  },
   badgeTitle: {
     fontSize: 14,
     fontWeight: '600',
@@ -455,7 +339,7 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: 4,
-    backgroundColor: 'purple',
+    backgroundColor: PURPLE,
     borderRadius: 2,
   },
   modalBackdrop: {
@@ -532,14 +416,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
   },
-  questGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  questWrapper: {
-    width: '48%',
-    marginBottom: 16,
-  },
-  
 });

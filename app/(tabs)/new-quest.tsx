@@ -20,7 +20,7 @@ const LIGHTGRAY = '#F2F7FD';
 
 export default function NewQuest() {
   const router = useRouter();
-
+  const [description, setDescription] = useState('');
   const [quest, setQuest] = useState('');
   const [location, setLocation] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -71,6 +71,18 @@ export default function NewQuest() {
 
     fetchUserGroups();
   }, []);
+
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .map((word) => word[0]?.toUpperCase())
+      .join('')
+      .slice(0, 2);
+  
+  const initials = getInitials(hostName);
+  const avatarColor = ['#FFD166', '#06D6A0', '#EF476F', '#118AB2', '#8338EC'][
+    Math.floor(Math.random() * 5)
+  ];
 
   const whenOptions = [
     { key: 'now', label: 'Now' },
@@ -132,14 +144,42 @@ export default function NewQuest() {
         : parseInt(durationOption);
       const endTime = new Date(startTime.getTime() + duration * 60000);
 
+      let numInGroup = 0;
+      let uniqueGroupID = '';
+
+      if (visibility === 'All Campus') {
+        numInGroup = 0;
+        uniqueGroupID = 'All Campus';
+      } else {
+        const matchedGroup = userGroups.find(g => g.name === visibility);
+        if (matchedGroup) {
+          uniqueGroupID = matchedGroup.id;
+          const groupRef = doc(db, 'groups', matchedGroup.id);
+          const groupSnap = await getDoc(groupRef);
+          if (groupSnap.exists()) {
+            const groupData = groupSnap.data();
+            const memberHandles = groupData.memberHandles || [];
+            numInGroup = memberHandles.length;
+          }
+        }
+      }
+
+
       const questRef = await addDoc(collection(db, 'quests'), {
         name: quest,
         location: coordinates,
         groupid: visibility,
+        unique_group_ID: uniqueGroupID,
         host: [hostName],
         when: Timestamp.fromDate(startTime),
         end_time: Timestamp.fromDate(endTime),
+        num_in_group: numInGroup,
+        attendees: [hostName],
+        description: description,
       });
+      
+      
+
 
       const userRef = doc(db, 'flp_names', hostName);
       console.log('Updating host:', hostName, 'with quest ID:', questRef.id);
@@ -210,22 +250,33 @@ export default function NewQuest() {
           value={quest}
           onChangeText={setQuest}
         />
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+          placeholder="Add more context or details about your quest..."
+          placeholderTextColor="#999"
+          multiline
+          numberOfLines={4}
+          value={description}
+          onChangeText={setDescription}
+        />
+          <Text style={styles.label}>Where</Text>
+          <View style={styles.locationRow}>
+            <View style={styles.locationContainer}>
+              <Ionicons name="location-sharp" size={20} color="#999" />
+              <TextInput
+                style={styles.locationInput}
+                placeholder="Place name, address, etc"
+                placeholderTextColor="#999"
+                value={location}
+                onChangeText={setLocation}
+              />
+            </View>
+            <Pressable style={styles.inlineSearchButton} onPress={fetchLocationSuggestions}>
+              <Ionicons name="search" size={18} color="white" />
+            </Pressable>
+          </View>
 
-        <Text style={styles.label}>Where</Text>
-        <View style={styles.locationContainer}>
-          <Ionicons name="location-sharp" size={20} color="#999" />
-          <TextInput
-            style={styles.locationInput}
-            placeholder="Place name, address, etc"
-            placeholderTextColor="#999"
-            value={location}
-            onChangeText={setLocation}
-          />
-        </View>
-
-        <Pressable style={styles.searchButton} onPress={fetchLocationSuggestions}>
-          <Text style={styles.searchButtonText}>Search Location</Text>
-        </Pressable>
 
         {suggestions.length > 0 && (
           <View style={styles.dropdownList}>
@@ -335,26 +386,17 @@ export default function NewQuest() {
           />
         )}
 
-        <Text style={styles.label}>Add a cover photo (optional)</Text>
-        <Pressable
-          style={styles.photoPlaceholder}
-          onPress={() => setPhotoAdded(true)}
-        >
-          {photoAdded ? (
-            <Image source={hostAvatar} style={styles.photo} />
-          ) : (
-            <Ionicons name="image-outline" size={48} color="#CCC" />
-          )}
-        </Pressable>
-
         <Text style={styles.sectionTitle}>Hosted by</Text>
         <View style={styles.hostContainer}>
-          <Image source={hostAvatar} style={styles.avatar} />
-          <Text style={styles.hostName}>{hostName}</Text>
-          <Pressable style={styles.addHostsButton}>
-            <Text style={styles.addHostsText}>+ Add CoHosts</Text>
-          </Pressable>
+        <View style={[styles.avatarCircle, { backgroundColor: avatarColor }]}>
+          <Text style={styles.avatarInitials}>{initials}</Text>
         </View>
+        <Text style={styles.hostName}>{hostName}</Text>
+        <Pressable style={styles.addHostsButton}>
+          <Text style={styles.addHostsText}>+ Add CoHosts</Text>
+        </Pressable>
+      </View>
+
 
         <Text style={styles.sectionTitle}>Who can see this</Text>
         <View>
@@ -619,4 +661,73 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  avatarCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarInitials: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  searchButton: {
+    backgroundColor: PURPLE,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 999,
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+    elevation: 2, // subtle shadow on Android
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  searchButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  locationContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    paddingHorizontal: 12,
+    height: 44,
+  },
+  locationInput: {
+    flex: 1,
+    marginLeft: 8,
+    height: 44,
+    color: '#333',
+  },
+  inlineSearchButton: {
+    marginLeft: 8,
+    backgroundColor: PURPLE,
+    padding: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 44,
+    width: 44,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  
 });
