@@ -124,29 +124,38 @@ export default function Map() {
         showsMyLocationButton={false}
         onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {quests.map((quest) => (
+        {quests.map((quest, index) => {
+        // Offset slightly if other quests have same lat/lng
+        const offsetLat = index * 0.00005; // ~5m
+        const offsetLng = index * 0.00005;
+
+        const adjustedLat = quest.location.latitude + offsetLat;
+        const adjustedLng = quest.location.longitude + offsetLng;
+
+        return (
           <Marker
-          key={quest.id}
-          coordinate={{
-            latitude: quest.location.latitude,
-            longitude: quest.location.longitude,
-          }}
-        >
-          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="location-sharp" size={40} color={PURPLE} />
-            {quest.isHost && (
-              <View style={styles.crownWrapper}>
-                <Text style={styles.crown}>♛</Text>
-              </View>
-            )}
-          </View>
-          <Callout onPress={() => openPopup(quest)}>
-            <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
-            <Text>Tap for more info</Text>
-          </Callout>
-        </Marker>
-        
-        ))}
+            key={quest.id}
+            coordinate={{
+              latitude: adjustedLat,
+              longitude: adjustedLng,
+            }}
+          >
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="location-sharp" size={40} color={PURPLE} />
+              {quest.isHost && (
+                <View style={styles.crownWrapper}>
+                  <Text style={styles.crown}>♛</Text>
+                </View>
+              )}
+            </View>
+            <Callout onPress={() => openPopup(quest)}>
+              <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
+              <Text>Tap for more info</Text>
+            </Callout>
+          </Marker>
+        );
+      })}
+
       </MapView>
 
       {selectedQuest && (
