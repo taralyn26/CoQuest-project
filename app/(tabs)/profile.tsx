@@ -64,7 +64,8 @@ export default function Profile() {
     return result;
   }, [fullName]);
 
-  const randomColor = ['#FFD166', '#06D6A0', '#EF476F', '#118AB2', '#8338EC'][Math.floor(Math.random() * 5)];
+  // Use grey color for all avatars
+  const avatarColor = '#6B7280';
 
   useEffect(() => {
     const fetchProfileAndQuests = async () => {
@@ -164,7 +165,7 @@ export default function Profile() {
       <View style={styles.header}>
         <View style={styles.purpleBackground} />
         <View style={styles.curve} />
-        <View style={[styles.initialsCircle, { backgroundColor: randomColor }]}>
+        <View style={[styles.initialsCircle, { backgroundColor: avatarColor }]}>
           {fullName ? (
             <Text style={styles.initialsText}>{initials}</Text>
           ) : (
