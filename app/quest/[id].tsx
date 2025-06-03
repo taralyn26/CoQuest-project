@@ -142,9 +142,15 @@ export default function QuestDetailPage() {
       <Image source={questImage} style={styles.image} />
 
       <View style={styles.body}>
-        <Text style={styles.host}>
-          Hosted by {Array.isArray(quest.host) ? quest.host[0] : quest.host || 'Unknown'}
-        </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+  <Text style={styles.host}>Hosted by </Text>
+  <View style={styles.bubble}>
+    <Text style={styles.bubbleText}>
+      {Array.isArray(quest.host) ? quest.host[0] : quest.host || 'Unknown'}
+    </Text>
+  </View>
+</View>
+
 
         <Text style={styles.datetime}>
           {(() => {

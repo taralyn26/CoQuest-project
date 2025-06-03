@@ -79,9 +79,7 @@ export default function Quest({ id, from = 'quest-dashboard' }: { id: string; fr
 
       </View>
       <Text style={styles.title}>{quest.name}</Text>
-      {quest.description && (
-        <Text style={styles.description}>{quest.description}</Text>
-      )}
+      
     </Pressable>
   );
 }
