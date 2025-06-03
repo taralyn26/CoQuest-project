@@ -130,9 +130,7 @@ export default function Quest({
         )}
        </View>
       <Text style={styles.title}>{quest.name}</Text>
-      {quest.description && (
-        <Text style={styles.description}>{quest.description}</Text>
-      )}
+      
     </Pressable>
   );
 }

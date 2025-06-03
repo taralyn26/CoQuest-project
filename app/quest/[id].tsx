@@ -38,7 +38,6 @@ export default function QuestDetailPage() {
     const email = auth.currentUser?.email || '';
     return email.split('@')[0].toLowerCase();
   })();
-  
 
   const currentUser = auth.currentUser;
   const handle = currentUser?.email?.split('@')[0].toLowerCase();
@@ -68,17 +67,6 @@ export default function QuestDetailPage() {
           setIsRSVPed(attendees.includes(currentUserHandle));
           setParticipants(attendees);
 
-          const groupID = questData.unique_group_ID;
-          if (groupID && groupID !== 'All Campus') {
-            const groupRef = doc(db, 'groups', groupID);
-            const groupSnap = await getDoc(groupRef);
-            if (groupSnap.exists()) {
-              const groupData = groupSnap.data();
-              const members = groupData.memberHandles || [];
-              // Optional: merge group + attendees if needed
-            }
-          }
-
           if (questData.location?.latitude && questData.location?.longitude) {
             try {
               const res = await fetch(
@@ -86,16 +74,12 @@ export default function QuestDetailPage() {
               );
               const data = await res.json();
               setReadableLocation(data.display_name || 'Unknown location');
-            } catch (err) {
-              console.warn('Failed to reverse geocode:', err);
+            } catch {
               setReadableLocation('Unknown location');
             }
           } else {
             setReadableLocation('No location specified');
           }
-
-        } else {
-          console.log('❌ Quest not found');
         }
       } catch (err) {
         console.error('❌ Failed to fetch quest:', err);
@@ -144,6 +128,13 @@ export default function QuestDetailPage() {
     );
   }
 
+  const ts = quest.when ?? quest.time;
+  const date = new Date(ts.seconds * 1000);
+  const fullDate = date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+  const locationWords = readableLocation.split(' ').slice(0, 12).join(' ') + (readableLocation.split(' ').length > 12 ? '…' : '');
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
@@ -157,32 +148,23 @@ export default function QuestDetailPage() {
       <Image source={getQuestImage(quest)} style={styles.image} />
 
       <View style={styles.body}>
-        <Text style={styles.host}>
-          Hosted by {Array.isArray(quest.host) ? quest.host[0] : quest.host || 'Unknown'}
-        </Text>
+        <Text style={styles.date}>{fullDate}</Text>
 
-        <Text style={styles.datetime}>
-          {(() => {
-            const ts = quest?.when ?? quest?.time;
-            if (!ts?.seconds) return '';
-            const date = new Date(ts.seconds * 1000);
-            return `${date.toLocaleDateString(undefined, {
-              weekday: 'long',
-            })} at ${date.toLocaleTimeString([], {
-              hour: 'numeric',
-              minute: '2-digit',
-            })}`;
-          })()}
-        </Text>
-
-        <Text style={styles.description}>
-          {quest.description || 'No description provided.'}
-        </Text>
+        <View style={styles.metaRow}>
+          <Text style={styles.time}>{time}</Text>
+          <View style={styles.bubble}>
+            <Text style={styles.bubbleText}>
+              {Array.isArray(quest.host) ? quest.host[0] : quest.host || 'Unknown'}
+            </Text>
+          </View>
+        </View>
 
         <View style={styles.locationRow}>
           <Ionicons name="location-sharp" size={16} color="#333" />
-          <Text style={styles.location}>{readableLocation}</Text>
+          <Text style={styles.location}>{locationWords}</Text>
         </View>
+
+        <Text style={styles.description}>{quest.description || 'No description provided.'}</Text>
 
         <Pressable
           style={[
@@ -196,12 +178,15 @@ export default function QuestDetailPage() {
             isRSVPed && { color: '#FFF' },
           ]}>
             {isRSVPed ? "RSVP'd" : "RSVP"}
+          <Text style={[styles.rsvpText, isRSVPed && { color: '#FFF' }]}>
+            {isRSVPed ? 'RSVP’d' : 'RSVP'}
           </Text>
         </Pressable>
-        
+
         <Text style={styles.subheader}>
           {participants.length} Quester{participants.length !== 1 ? 's' : ''}
         </Text>
+
         <View style={styles.bubbleRow}>
           {participants.map((name) => (
             <View key={name} style={styles.bubble}>
@@ -217,21 +202,46 @@ export default function QuestDetailPage() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#FFF' },
   header: { flexDirection: 'row', padding: 16 },
-  title: { fontSize: 22, fontWeight: '700', paddingHorizontal: 16 },
+  title: { fontSize: 24, fontWeight: '700', paddingHorizontal: 16 },
   image: {
-    height: 180,
-    margin: 16,
-    borderRadius: 12,
     width: '90%',
+    aspectRatio: 1,
+    margin: 4,
+    borderRadius: 12,
     alignSelf: 'center',
     resizeMode: 'cover',
   },
   body: { paddingHorizontal: 16 },
-  host: { fontWeight: '500', marginBottom: 4 },
-  datetime: { fontSize: 14, marginBottom: 8 },
-  description: { fontSize: 14, marginBottom: 12 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  location: { marginLeft: 4, color: '#333' },
+  date: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+    color: '#000',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  time: { fontSize: 14, color: '#444' },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  location: {
+    marginLeft: 4,
+    color: '#333',
+    fontSize: 14,
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  description: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 16,
+  },
   rsvpButton: {
     borderWidth: 1,
     borderColor: PURPLE,
@@ -240,9 +250,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  rsvpText: { color: PURPLE, fontWeight: '600' },
-  subheader: { fontSize: 14, color: '#888', marginBottom: 8 },
-  bubbleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  rsvpText: {
+    fontWeight: '600',
+    color: PURPLE,
+  },
+  subheader: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 8,
+  },
+  bubbleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   bubble: {
     backgroundColor: '#F4F4F4',
     paddingHorizontal: 20,
