@@ -13,6 +13,8 @@ import {
 import MapView, { Callout, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { auth, db } from '../firebase/config';
 
+import { onSnapshot } from 'firebase/firestore';
+
 export default function Map() {
   const router = useRouter();
   const [selectedQuest, setSelectedQuest] = useState<any>(null);
@@ -29,59 +31,54 @@ export default function Map() {
   };
 
   useEffect(() => {
-    const fetchQuests = async () => {
-      try {
-        const email = auth.currentUser?.email || '';
-        const handle = email.split('@')[0];
-        // const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
-        // const ref = doc(db, 'flp_names', capitalizedHandle);
-        const lowercaseHandle = handle.toLowerCase();
-        const ref = doc(db, 'flp_names', lowercaseHandle);
-
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return;
-
-        const data = snap.data();
-        const display = data.display_quests || [];
-        const hosted = data.hosted_quests || [];
-        const all = [...display, ...hosted].map((q: any) =>
-          typeof q === 'string' ? q : q.id
-        );
-
-        const now = Date.now() / 1000;
-        const results = await Promise.all(
-          all.map(async (id) => {
-            const questSnap = await getDoc(doc(db, 'quests', id));
-            if (!questSnap.exists()) return null;
-
-            const quest = questSnap.data();
-            const end = quest?.end_time?.seconds;
-            const loc = quest?.location;
-
-            if (
-              typeof end !== 'number' ||
-              end <= now ||
-              !loc ||
-              typeof loc.latitude !== 'number' ||
-              typeof loc.longitude !== 'number'
-            ) {
-              console.log(`⚠️ Skipping quest ${id} due to missing/invalid data`);
-              return null;
-            }
-
-            return { id, ...quest };
-          })
-        );
-
-        const filtered = results.filter(Boolean) as any[];
-        console.log('✅ Loaded quests:', filtered.map((q) => q.name));
-        setQuests(filtered);
-      } catch (err) {
-        console.error('❌ Failed to load quests for map:', err);
-      }
-    };
-
-    fetchQuests();
+    const email = auth.currentUser?.email || '';
+    const handle = email.split('@')[0].toLowerCase();
+    const ref = doc(db, 'flp_names', handle);
+  
+    const unsubscribe = onSnapshot(ref, async (snap) => {
+      if (!snap.exists()) return;
+  
+      const data = snap.data();
+      const display = data.display_quests || [];
+      const hosted = data.hosted_quests || [];
+      // const all = [...display, ...hosted].map((q: any) =>
+      //   typeof q === 'string' ? q : q.id
+      // );
+      const all = Array.from(new Set([...display, ...hosted].map((q: any) =>
+        typeof q === 'string' ? q : q.id
+      )));
+      
+  
+      const now = Date.now() / 1000;
+      const results = await Promise.all(
+        all.map(async (id) => {
+          const questSnap = await getDoc(doc(db, 'quests', id));
+          if (!questSnap.exists()) return null;
+  
+          const quest = questSnap.data();
+          const end = quest?.end_time?.seconds;
+          const loc = quest?.location;
+  
+          if (
+            typeof end !== 'number' ||
+            end <= now ||
+            !loc ||
+            typeof loc.latitude !== 'number' ||
+            typeof loc.longitude !== 'number'
+          ) {
+            return null;
+          }
+  
+          return { id, ...quest };
+        })
+      );
+  
+      const filtered = results.filter(Boolean) as any[];
+      console.log('✅ Live updated quests on map:', filtered.map((q) => q.name));
+      setQuests(filtered);
+    });
+  
+    return () => unsubscribe(); // cleanup
   }, []);
 
   const openPopup = (quest: any) => {
