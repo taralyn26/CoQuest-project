@@ -66,7 +66,12 @@ export default function Map() {
               return null;
             }
   
-            return { id, ...quest };
+            return {
+              id,
+              ...quest,
+              isHost: quest.host?.[0]?.toLowerCase() === handle,
+            };
+            
           })
         );
   
@@ -119,20 +124,26 @@ export default function Map() {
       >
         {quests.map((quest) => (
           <Marker
-            key={quest.id}
-            coordinate={{
-              latitude: quest.location.latitude,
-              longitude: quest.location.longitude,
-            }}
-          >
-            <Ionicons name="location-sharp" size={40} color="#56018D" />
-            <Callout onPress={() => {
-              openPopup(quest);
-            }}>
-              <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
-              <Text>Tap for more info</Text>
-            </Callout>
-          </Marker>
+          key={quest.id}
+          coordinate={{
+            latitude: quest.location.latitude,
+            longitude: quest.location.longitude,
+          }}
+        >
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="location-sharp" size={40} color={PURPLE} />
+            {quest.isHost && (
+              <View style={styles.crownWrapper}>
+                <Text style={styles.crown}>♛</Text>
+              </View>
+            )}
+          </View>
+          <Callout onPress={() => openPopup(quest)}>
+            <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
+            <Text>Tap for more info</Text>
+          </Callout>
+        </Marker>
+        
         ))}
       </MapView>
 
@@ -261,6 +272,20 @@ const styles = StyleSheet.create({
   fabText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  crownWrapper: {
+    position: 'absolute',
+    top: 3,
+    zIndex: 999,
+    backgroundColor: PURPLE,
+    borderRadius: 10,
+    paddingHorizontal: 2,
+    paddingVertical: 1,
+  },
+  crown: {
+    color: 'white',
+    fontSize: 20,
     fontWeight: 'bold',
   },
 });
