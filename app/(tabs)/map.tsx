@@ -10,7 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Callout, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { auth, db } from '../firebase/config';
 
 import { onSnapshot } from 'firebase/firestore';
@@ -148,25 +148,23 @@ export default function Map() {
 
         return (
           <Marker
-            key={quest.id}
-            coordinate={{
-              latitude: adjustedLat,
-              longitude: adjustedLng,
-            }}
-          >
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="location-sharp" size={40} color={PURPLE} />
-              {quest.isHost && (
-                <View style={styles.crownWrapper}>
-                  <Text style={styles.crown}>♛</Text>
-                </View>
-              )}
-            </View>
-            <Callout onPress={() => openPopup(quest)}>
-              <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
-              <Text>Tap for more info</Text>
-            </Callout>
-          </Marker>
+  key={quest.id}
+  coordinate={{
+    latitude: adjustedLat,
+    longitude: adjustedLng,
+  }}
+  onPress={() => openPopup(quest)} // <--- move tap handler here
+>
+  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+    <Ionicons name="location-sharp" size={40} color={PURPLE} />
+    {quest.isHost && (
+      <View style={styles.crownWrapper}>
+        <Text style={styles.crown}>♛</Text>
+      </View>
+    )}
+  </View>
+</Marker>
+
         );
       })}
 
@@ -203,7 +201,7 @@ export default function Map() {
               style={styles.calloutButton}
               onPress={() => {
                 closePopup();
-                router.push(`/quest/${selectedQuest.id}`);
+                router.push({ pathname: `/quest/${selectedQuest.id}`, params: { from: 'map' } });
               }}
             >
               <Text style={styles.calloutButtonText}>View Details</Text>
@@ -212,12 +210,7 @@ export default function Map() {
         </Animated.View>
       )}
 
-      <Pressable
-        style={styles.fab}
-        onPress={() => router.push('/(tabs)/new-quest')}
-      >
-        <Text style={styles.fabText}>+ Quest</Text>
-      </Pressable>
+      
     </View>
   );
 }

@@ -199,27 +199,32 @@ export default function CreateGroup() {
         )}
 
         {/* list of users */}
-        {filtered.map((userProfile) => {
-          const isSel = selected.includes(userProfile.handle);
-          return (
-            <Pressable
-              key={userProfile.handle}
-              style={[
-                styles.userRow,
-                isSel && { borderColor: PURPLE, borderWidth: 2 }
-              ]}
-              onPress={() => toggle(userProfile.handle)}
-            >
-              <View>
-                <Text style={styles.userText}>{userProfile.displayName}</Text>
-                <Text style={styles.userEmail}>{userProfile.email}</Text>
-              </View>
-              {isSel && (
-                <Ionicons name="checkmark-circle" size={20} color={PURPLE} />
-              )}
-            </Pressable>
-          );
-        })}
+        <View style={{ maxHeight: 300 }}>
+  <ScrollView>
+    {filtered.map((userProfile) => {
+      const isSel = selected.includes(userProfile.handle);
+      return (
+        <Pressable
+          key={userProfile.handle}
+          style={[
+            styles.userRow,
+            isSel && { borderColor: PURPLE, borderWidth: 2 }
+          ]}
+          onPress={() => toggle(userProfile.handle)}
+        >
+          <View>
+            <Text style={styles.userText}>{userProfile.displayName}</Text>
+            <Text style={styles.userEmail}>{userProfile.email}</Text>
+          </View>
+          {isSel && (
+            <Ionicons name="checkmark-circle" size={20} color={PURPLE} />
+          )}
+        </Pressable>
+      );
+    })}
+  </ScrollView>
+</View>
+
 
         {filtered.length === 0 && (
           <Text style={styles.noResults}>No users found</Text>
