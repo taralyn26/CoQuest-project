@@ -30,56 +30,65 @@ export default function Map() {
     longitudeDelta: 0.01,
   };
 
+
+
+
+
+
+
+
   useEffect(() => {
-    const email = auth.currentUser?.email || '';
-    const handle = email.split('@')[0].toLowerCase();
-    const ref = doc(db, 'flp_names', handle);
+  const email = auth.currentUser?.email || '';
+  const handle = email.split('@')[0].toLowerCase();
+  const ref = doc(db, 'flp_names', handle);
+
+  const unsubscribe = onSnapshot(ref, async (snap) => {
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const display = data.display_quests || [];
+    const hosted = data.hosted_quests || [];
+    const all = Array.from(
+      new Set([...display, ...hosted].map((q: any) => (typeof q === 'string' ? q : q.id)))
+    );
+
+    const now = Date.now() / 1000;
+    const results = await Promise.all(
+      all.map(async (id) => {
+        const questSnap = await getDoc(doc(db, 'quests', id));
+        if (!questSnap.exists()) return null;
+
+        const quest = questSnap.data();
+        const end = quest?.end_time?.seconds;
+        const loc = quest?.location;
+
+        if (
+          typeof end !== 'number' ||
+          end <= now ||
+          !loc ||
+          typeof loc.latitude !== 'number' ||
+          typeof loc.longitude !== 'number'
+        ) {
+          return null;
+        }
+
+        return {
+          id,
+          ...quest,
+          isHost: quest.host?.[0]?.toLowerCase() === handle,
+        };
+      })
+    );
+
+    const filtered = results.filter(Boolean) as any[];
+    console.log('✅ Live updated quests on map:', filtered.map((q) => q.name));
+    setQuests(filtered);
+  });
+
+  return () => unsubscribe(); // cleanup
+}, []);
   
-    const unsubscribe = onSnapshot(ref, async (snap) => {
-      if (!snap.exists()) return;
   
-      const data = snap.data();
-      const display = data.display_quests || [];
-      const hosted = data.hosted_quests || [];
-      // const all = [...display, ...hosted].map((q: any) =>
-      //   typeof q === 'string' ? q : q.id
-      // );
-      const all = Array.from(new Set([...display, ...hosted].map((q: any) =>
-        typeof q === 'string' ? q : q.id
-      )));
-      
-  
-      const now = Date.now() / 1000;
-      const results = await Promise.all(
-        all.map(async (id) => {
-          const questSnap = await getDoc(doc(db, 'quests', id));
-          if (!questSnap.exists()) return null;
-  
-          const quest = questSnap.data();
-          const end = quest?.end_time?.seconds;
-          const loc = quest?.location;
-  
-          if (
-            typeof end !== 'number' ||
-            end <= now ||
-            !loc ||
-            typeof loc.latitude !== 'number' ||
-            typeof loc.longitude !== 'number'
-          ) {
-            return null;
-          }
-  
-          return { id, ...quest };
-        })
-      );
-  
-      const filtered = results.filter(Boolean) as any[];
-      console.log('✅ Live updated quests on map:', filtered.map((q) => q.name));
-      setQuests(filtered);
-    });
-  
-    return () => unsubscribe(); // cleanup
-  }, []);
 
   const openPopup = (quest: any) => {
     setSelectedQuest(quest);
@@ -117,20 +126,26 @@ export default function Map() {
       >
         {quests.map((quest) => (
           <Marker
-            key={quest.id}
-            coordinate={{
-              latitude: quest.location.latitude,
-              longitude: quest.location.longitude,
-            }}
-          >
-            <Ionicons name="location-sharp" size={40} color="#56018D" />
-            <Callout onPress={() => {
-              openPopup(quest);
-            }}>
-              <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
-              <Text>Tap for more info</Text>
-            </Callout>
-          </Marker>
+          key={quest.id}
+          coordinate={{
+            latitude: quest.location.latitude,
+            longitude: quest.location.longitude,
+          }}
+        >
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="location-sharp" size={40} color={PURPLE} />
+            {quest.isHost && (
+              <View style={styles.crownWrapper}>
+                <Text style={styles.crown}>♛</Text>
+              </View>
+            )}
+          </View>
+          <Callout onPress={() => openPopup(quest)}>
+            <Text style={{ fontWeight: 'bold' }}>{quest.name}</Text>
+            <Text>Tap for more info</Text>
+          </Callout>
+        </Marker>
+        
         ))}
       </MapView>
 
@@ -259,6 +274,20 @@ const styles = StyleSheet.create({
   fabText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  crownWrapper: {
+    position: 'absolute',
+    top: 3,
+    zIndex: 999,
+    backgroundColor: PURPLE,
+    borderRadius: 10,
+    paddingHorizontal: 2,
+    paddingVertical: 1,
+  },
+  crown: {
+    color: 'white',
+    fontSize: 20,
     fontWeight: 'bold',
   },
 });
