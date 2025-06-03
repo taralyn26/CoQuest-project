@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
@@ -14,9 +15,10 @@ import { db } from '../app/firebase/config';
 const { width } = Dimensions.get('window');
 const questImage = require('../assets/images/mall.png'); // Placeholder
 
-export default function Quest({ id, from = 'quest-dashboard' }: { id: string, from?: string }) {
+export default function Quest({ id, from = 'quest-dashboard' }: { id: string; from?: string }) {
   const router = useRouter();
   const [quest, setQuest] = useState(null);
+  const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
     const fetchQuest = async () => {
@@ -24,7 +26,16 @@ export default function Quest({ id, from = 'quest-dashboard' }: { id: string, fr
         const ref = doc(db, 'quests', id);
         const snap = await getDoc(ref);
         if (snap.exists()) {
-          setQuest(snap.data());
+          const questData = snap.data();
+          setQuest(questData);
+
+          // Get current user email handle
+          const user = getAuth().currentUser;
+          const handle = user?.email?.split('@')[0]?.toLowerCase();
+
+          if (handle && Array.isArray(questData.host)) {
+            setIsHost(questData.host[0]?.toLowerCase() === handle);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch quest:', err);
@@ -55,20 +66,22 @@ export default function Quest({ id, from = 'quest-dashboard' }: { id: string, fr
     <Pressable onPress={goToDetail} style={styles.card}>
       <View>
         <Image source={questImage} style={styles.image} />
-        {formattedDate ? (
+        {formattedDate && (
           <View style={styles.dateTag}>
             <Text style={styles.dateText}>{formattedDate}</Text>
           </View>
-        ) : null}
-        <View style={styles.hostingTag}>
-          <Text style={styles.hostingText}>👑 hosting</Text>
-        </View>
+        )}
+        {isHost && (
+          <View style={styles.hostingTag}>
+            <Text style={styles.hostingText}>♛ Hosting </Text>
+          </View>
+        )}
+
       </View>
       <Text style={styles.title}>{quest.name}</Text>
       {quest.description && (
-      <Text style={styles.description}>{quest.description}</Text>
-    )}
-
+        <Text style={styles.description}>{quest.description}</Text>
+      )}
     </Pressable>
   );
 }
@@ -100,15 +113,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 6,
     left: 6,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    backgroundColor: '#56018D',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   hostingText: {
     fontSize: 10,
+    fontWeight: '600',
     color: 'white',
-  },
+  },  
   title: {
     marginTop: 6,
     fontSize: 16,
@@ -119,8 +133,9 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
-  
 });
+
+
 
 
 
