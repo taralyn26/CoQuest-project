@@ -11,10 +11,20 @@ import {
   View,
 } from 'react-native';
 import { auth, db } from '../firebase/config';
-//import { auth, db } from '../firebase/config';
 
 const PURPLE = '#56018D';
-const questImage = require('../../assets/images/mall.png');
+
+// Import category images
+const categoryImages = {
+  social: require('../../assets/images/social.png'),
+  gym: require('../../assets/images/gym.png'), 
+  food: require('../../assets/images/food.png'),
+  study: require('../../assets/images/study.png'),
+  car: require('../../assets/images/car.png'),
+};
+
+// Fallback image if no category is specified
+const defaultImage = require('../../assets/images/mall.png');
 
 export default function QuestDetailPage() {
   const router = useRouter();
@@ -23,12 +33,6 @@ export default function QuestDetailPage() {
   const [participants, setParticipants] = useState<string[]>([]);
   const [readableLocation, setReadableLocation] = useState<string>('Loading location...');
   const [isRSVPed, setIsRSVPed] = useState(false);
-
-  // const currentUserHandle = (() => {
-  //   const email = auth.currentUser?.email || '';
-  //   const handle = email.split('@')[0];
-  //   return handle.charAt(0).toUpperCase() + handle.slice(1);
-  // })();
 
   const currentUserHandle = (() => {
     const email = auth.currentUser?.email || '';
@@ -40,6 +44,16 @@ export default function QuestDetailPage() {
   const handle = currentUser?.email?.split('@')[0].toLowerCase();
   const isHost = quest?.host?.[0]?.toLowerCase() === handle;
 
+  // Function to get the correct image for a quest
+  const getQuestImage = (quest: any) => {
+    // Check if quest has a photo category
+    if (quest.photo && categoryImages[quest.photo]) {
+      return categoryImages[quest.photo];
+    }
+    
+    // Fall back to default image
+    return defaultImage;
+  };
 
   useEffect(() => {
     const fetchQuest = async () => {
@@ -139,7 +153,8 @@ export default function QuestDetailPage() {
       </View>
 
       <Text style={styles.title}>{quest.name}</Text>
-      <Image source={questImage} style={styles.image} />
+      {/* Updated to use dynamic image based on quest category */}
+      <Image source={getQuestImage(quest)} style={styles.image} />
 
       <View style={styles.body}>
         <Text style={styles.host}>
@@ -180,7 +195,7 @@ export default function QuestDetailPage() {
             styles.rsvpText,
             isRSVPed && { color: '#FFF' },
           ]}>
-            {isRSVPed ? 'RSVP’d' : 'RSVP'}
+            {isRSVPed ? "RSVP'd" : "RSVP"}
           </Text>
         </Pressable>
         

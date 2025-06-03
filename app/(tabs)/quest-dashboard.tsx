@@ -84,7 +84,12 @@ export default function QuestDashboard() {
       <View style={styles.questGrid}>
         {uniqueQuests.map((q) => (
           <View key={q.id} style={styles.questWrapper}>
-            <Quest id={q.id} from="quest-dashboard" />
+            <Quest 
+              id={q.id} 
+              from="quest-dashboard" 
+              questData={q}
+              photoCategory={q.photo}
+            />
           </View>
         ))}
       </View>
@@ -185,11 +190,3 @@ const styles = StyleSheet.create({
     color: '#56018D',
   },
 });
-
-
-
-
-
-
-
-

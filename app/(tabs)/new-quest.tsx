@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, Timestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -10,10 +10,10 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View
 } from 'react-native';
 import { auth, db } from '../firebase/config';
-
 
 
 const PURPLE = '#56018D';
@@ -32,6 +32,7 @@ export default function NewQuest() {
   const [customDuration, setCustomDuration] = useState('');
   const [customDurationVisible, setCustomDurationVisible] = useState(false);
   const [photoAdded, setPhotoAdded] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(''); // NEW: Photo selection state
   const [visibility, setVisibility] = useState('All Campus');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userGroups, setUserGroups] = useState<{ id: string; name: string }[]>([]);
@@ -40,6 +41,15 @@ export default function NewQuest() {
   const currentUser = auth.currentUser;
   const email = currentUser.displayName || currentUser.email || currentUser.uid;
   const [description, setDescription] = useState('');
+
+  // NEW: Photo options
+  const photoOptions = [
+    { id: 'social', label: 'Social', emoji: '🎉' },
+    { id: 'gym', label: 'Gym', emoji: '💪' },
+    { id: 'food', label: 'Food', emoji: '🍕' },
+    { id: 'study', label: 'Study', emoji: '📚' },
+    { id: 'car', label: 'Car', emoji: '🚗' },
+  ];
 
   // const pre_hostName = email.split('@')[0];
   // const hostName = pre_hostName.charAt(0).toUpperCase() + pre_hostName.slice(1);
@@ -143,7 +153,7 @@ export default function NewQuest() {
       Alert.alert('Missing Fields', 'Please provide a quest name and location.');
       return;
     }
-  
+
     try {
       const res = await fetch(
         `https://api.locationiq.com/v1/autocomplete.php?key=pk.7f060c5daf66db53424ea6be3f65b9f7&q=${encodeURIComponent(location)}&format=json`
@@ -153,7 +163,7 @@ export default function NewQuest() {
         latitude: parseFloat(locationData[0].lat),
         longitude: parseFloat(locationData[0].lon),
       };
-  
+
       let startTime = new Date();
       if (whenOption === 'pickTime' && pickedTime !== 'Select time') {
         const [timeStr, ampm] = pickedTime.split(' ');
@@ -169,15 +179,15 @@ export default function NewQuest() {
           startTime.setDate(startTime.getDate() + 1);
         }
       }
-  
+
       const duration = durationOption === 'custom'
         ? parseInt(customDuration)
         : parseInt(durationOption);
       const endTime = new Date(startTime.getTime() + duration * 60000);
-  
+
       let numInGroup = 0;
       let uniqueGroupID = '';
-  
+
       if (visibility === 'All Campus') {
         numInGroup = 0;
         uniqueGroupID = 'All Campus';
@@ -194,7 +204,8 @@ export default function NewQuest() {
           }
         }
       }
-  
+
+      // UPDATED: Include photo field in Firebase document
       const questRef = await addDoc(collection(db, 'quests'), {
         name: quest,
         location: coordinates,
@@ -206,65 +217,45 @@ export default function NewQuest() {
         num_in_group: numInGroup,
         attendees: [hostName],
         description: description,
+        photo: selectedPhoto, // NEW: Save photo category label
       });
-  
+      
       const userRef = doc(db, 'flp_names', hostName);
       console.log('Updating host:', hostName, 'with quest ID:', questRef.id);
       await updateDoc(userRef, {
         hosted_quests: arrayUnion(questRef.id),
       });
-  
-      if (visibility === 'All Campus') {
-        try {
-          console.log('Broadcasting to ALL campus users...');
-          const allUsersSnap = await getDocs(collection(db, 'flp_names'));
-  
-          await Promise.all(
-            allUsersSnap.docs.map(async (userDoc) => {
-              const userId = userDoc.id;
-              const userRef = doc(db, 'flp_names', userId);
-              console.log(`Updating user: ${userId} with quest ID: ${questRef.id}`);
-              await updateDoc(userRef, {
-                display_quests: arrayUnion(questRef.id),
-              });
-            })
-          );
-  
-          console.log('Successfully broadcasted to all campus users.');
-        } catch (err) {
-          console.error('Error broadcasting to all campus users:', err);
-        }
-      } else {
+      if (visibility !== 'All Campus') {
         try {
           console.log('Visibility is restricted to group:', visibility);
           const matchedGroup = userGroups.find(g => g.name === visibility);
-          if (!matchedGroup) {
-            console.warn('No matching group found for name:', visibility);
-            return;
-          }
-  
-          const groupRef = doc(db, 'groups', matchedGroup.id);
+        if (!matchedGroup) {
+          console.warn('No matching group found for name:', visibility);
+          return;
+        }
+        const groupRef = doc(db, 'groups', matchedGroup.id);
           const groupSnap = await getDoc(groupRef);
-  
+      
           if (groupSnap.exists()) {
             const groupData = groupSnap.data();
             const memberHandles = groupData.memberHandles || [];
-  
+      
             console.log('Fetched group members:', memberHandles);
-  
+      
             await Promise.all(
               memberHandles.map(async (handle: string) => {
+                //const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
                 const capitalizedHandle = handle.toLowerCase();
                 const memberRef = doc(db, 'flp_names', capitalizedHandle);
-  
+      
                 console.log(`Updating member: ${capitalizedHandle} with quest ID: ${questRef.id}`);
-  
+      
                 await updateDoc(memberRef, {
                   display_quests: arrayUnion(questRef.id),
                 });
               })
             );
-  
+      
             console.log('Successfully updated all group members with quest ID.');
           } else {
             console.warn('Group document not found:', visibility);
@@ -273,7 +264,7 @@ export default function NewQuest() {
           console.error('Error updating display_quests for group members:', err);
         }
       }
-  
+
       Alert.alert('Quest Posted!', 'Your quest has been broadcast.');
       router.push('/(tabs)/map');
     } catch (error) {
@@ -281,7 +272,7 @@ export default function NewQuest() {
       Alert.alert('Error', 'Failed to broadcast your quest. Please try again.');
     }
   };
-  
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -442,6 +433,29 @@ export default function NewQuest() {
             onChangeText={setCustomDuration}
           />
         )}
+
+        {/* NEW: Photo Selection Section */}
+        <Text style={styles.sectionTitle}>Choose Photo</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photoScrollView}>
+          {photoOptions.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={[
+                styles.photoOption,
+                selectedPhoto === option.id && styles.selectedPhotoOption
+              ]}
+              onPress={() => setSelectedPhoto(option.id)}
+            >
+              <Text style={styles.photoEmoji}>{option.emoji}</Text>
+              <Text style={[
+                styles.photoLabel,
+                selectedPhoto === option.id && styles.selectedPhotoLabel
+              ]}>
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         <Text style={styles.sectionTitle}>Who can see this</Text>
         <View>
@@ -657,6 +671,38 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     color: '#333',
+  },
+  // NEW: Photo selection styles
+  photoScrollView: {
+    marginBottom: 16,
+  },
+  photoOption: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 80,
+    height: 80,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+  },
+  selectedPhotoOption: {
+    borderColor: PURPLE,
+    backgroundColor: '#F8F4FF',
+  },
+  photoEmoji: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  photoLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#666',
+  },
+  selectedPhotoLabel: {
+    color: PURPLE,
+    fontWeight: '600',
   },
   hostContainer: {
     flexDirection: 'row',

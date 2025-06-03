@@ -15,6 +15,18 @@ import { auth, db } from '../firebase/config';
 
 import { onSnapshot } from 'firebase/firestore';
 
+// Import category images
+const categoryImages = {
+  social: require('../../assets/images/social.png'),
+  gym: require('../../assets/images/gym.png'), 
+  food: require('../../assets/images/food.png'),
+  study: require('../../assets/images/study.png'),
+  car: require('../../assets/images/car.png'),
+};
+
+// Fallback image if no category is specified
+const defaultImage = require('../../assets/images/mall.png');
+
 export default function Map() {
   const router = useRouter();
   const [selectedQuest, setSelectedQuest] = useState<any>(null);
@@ -29,13 +41,6 @@ export default function Map() {
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   };
-
-
-
-
-
-
-
 
   useEffect(() => {
   const email = auth.currentUser?.email || '';
@@ -88,7 +93,16 @@ export default function Map() {
   return () => unsubscribe(); // cleanup
 }, []);
   
-  
+  // Function to get the correct image for a quest
+  const getQuestImage = (quest: any) => {
+    // Check if quest has a photo category
+    if (quest.photo && categoryImages[quest.photo]) {
+      return categoryImages[quest.photo];
+    }
+    
+    // Fall back to default image
+    return defaultImage;
+  };
 
   const openPopup = (quest: any) => {
     setSelectedQuest(quest);
@@ -151,7 +165,7 @@ export default function Map() {
 
       {selectedQuest && (
         <Animated.View style={[styles.calloutBox, { transform: [{ scale: scaleAnim }] }]}>
-          <Image source={require('../../assets/images/mall.png')} style={styles.calloutImage} />
+          <Image source={getQuestImage(selectedQuest)} style={styles.calloutImage} />
           <View style={styles.calloutContent}>
             <View style={styles.calloutHeader}>
               <Text style={styles.calloutTitle}>{selectedQuest.name}</Text>

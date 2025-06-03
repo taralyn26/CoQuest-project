@@ -13,14 +13,50 @@ import {
 import { db } from '../app/firebase/config';
 
 const { width } = Dimensions.get('window');
-const questImage = require('../assets/images/mall.png'); // Placeholder
 
-export default function Quest({ id, from = 'quest-dashboard' }: { id: string; from?: string }) {
+// Import category images
+const categoryImages = {
+  social: require('../assets/images/social.png'),
+  gym: require('../assets/images/gym.png'), 
+  food: require('../assets/images/food.png'),
+  study: require('../assets/images/study.png'),
+  car: require('../assets/images/car.png'),
+};
+
+// Fallback image if no category is specified
+const defaultImage = require('../assets/images/mall.png');
+
+export default function Quest({ 
+  id, 
+  from = 'quest-dashboard',
+  questData,
+  photoCategory 
+}: { 
+  id: string; 
+  from?: string;
+  questData?: any;
+  photoCategory?: string;
+}) {
   const router = useRouter();
-  const [quest, setQuest] = useState(null);
+  const [quest, setQuest] = useState(questData || null);
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
+    // If questData is provided, use it directly
+    if (questData) {
+      setQuest(questData);
+      
+      // Get current user email handle
+      const user = getAuth().currentUser;
+      const handle = user?.email?.split('@')[0]?.toLowerCase();
+
+      if (handle && Array.isArray(questData.host)) {
+        setIsHost(questData.host[0]?.toLowerCase() === handle);
+      }
+      return;
+    }
+
+    // Otherwise fetch quest data (fallback for other use cases)
     const fetchQuest = async () => {
       try {
         const ref = doc(db, 'quests', id);
@@ -42,13 +78,29 @@ export default function Quest({ id, from = 'quest-dashboard' }: { id: string; fr
       }
     };
     fetchQuest();
-  }, [id]);
+  }, [id, questData]);
 
   const goToDetail = () => {
     router.push({ pathname: `/quest/${id}`, params: { from } });
   };
 
   if (!quest) return null;
+
+  // Determine which image to use
+  const getQuestImage = () => {
+    // First try to use photoCategory prop
+    if (photoCategory && categoryImages[photoCategory]) {
+      return categoryImages[photoCategory];
+    }
+    
+    // Then try quest.photo field
+    if (quest.photo && categoryImages[quest.photo]) {
+      return categoryImages[quest.photo];
+    }
+    
+    // Fall back to default image
+    return defaultImage;
+  };
 
   let formattedDate = '';
   const when = quest.when;
@@ -65,7 +117,7 @@ export default function Quest({ id, from = 'quest-dashboard' }: { id: string; fr
   return (
     <Pressable onPress={goToDetail} style={styles.card}>
       <View>
-        <Image source={questImage} style={styles.image} />
+        <Image source={getQuestImage()} style={styles.image} />
         {formattedDate && (
           <View style={styles.dateTag}>
             <Text style={styles.dateText}>{formattedDate}</Text>
@@ -76,8 +128,7 @@ export default function Quest({ id, from = 'quest-dashboard' }: { id: string; fr
             <Text style={styles.hostingText}>♛ Hosting </Text>
           </View>
         )}
-
-      </View>
+       </View>
       <Text style={styles.title}>{quest.name}</Text>
       {quest.description && (
         <Text style={styles.description}>{quest.description}</Text>
@@ -122,8 +173,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     color: 'white',
-  },  
-  title: {
+  },
+    title: {
     marginTop: 6,
     fontSize: 16,
     fontWeight: 'bold',
@@ -134,20 +185,3 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
