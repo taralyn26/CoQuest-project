@@ -35,6 +35,7 @@ export default function NewQuest() {
   const [visibility, setVisibility] = useState('All Campus');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userGroups, setUserGroups] = useState<{ id: string; name: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
 
   const hostAvatar = require('../../assets/images/pic.png');
   const currentUser = auth.currentUser;
@@ -140,11 +141,32 @@ export default function NewQuest() {
     }
   };
 
+  // Function to clear all form fields
+  const clearForm = () => {
+    setQuest('');
+    setLocation('');
+    setDescription('');
+    setSuggestions([]);
+    setWhenOption('now');
+    setTimeDropdown(false);
+    setPickedTime('Select time');
+    setDurationOption('30');
+    setCustomDuration('');
+    setCustomDurationVisible(false);
+    setPhotoAdded(false);
+    setVisibility('All Campus');
+    setDropdownOpen(false);
+  };
+
   const handleBroadcast = async () => {
     if (!quest || !location) {
       Alert.alert('Missing Fields', 'Please provide a quest name and location.');
       return;
     }
+
+    // Prevent double-click by setting loading state
+    if (isLoading) return;
+    setIsLoading(true);
   
     try {
       const res = await fetch(
@@ -277,10 +299,13 @@ export default function NewQuest() {
       }
   
       Alert.alert('Quest Posted!', 'Your quest has been broadcast.');
+      clearForm(); // Clear form after successful broadcast
       router.push('/(tabs)/map');
     } catch (error) {
       console.error('Broadcast Error:', error);
       Alert.alert('Error', 'Failed to broadcast your quest. Please try again.');
+    } finally {
+      setIsLoading(false); // Reset loading state
     }
   };
   
@@ -502,8 +527,17 @@ export default function NewQuest() {
           )}
         </View>
 
-        <Pressable style={styles.broadcastButton} onPress={handleBroadcast}>
-          <Text style={styles.broadcastText}>Broadcast My Quest!</Text>
+        <Pressable 
+          style={[
+            styles.broadcastButton,
+            isLoading && styles.broadcastButtonDisabled
+          ]} 
+          onPress={handleBroadcast}
+          disabled={isLoading}
+        >
+          <Text style={styles.broadcastText}>
+            {isLoading ? 'Broadcasting...' : 'Broadcast My Quest!'}
+          </Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -732,6 +766,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
   },
+  broadcastButtonDisabled: {
+    backgroundColor: '#999',
+  },
   broadcastText: {
     color: '#FFF',
     fontSize: 16,
@@ -805,5 +842,4 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
-  
 });
