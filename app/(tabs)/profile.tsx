@@ -127,16 +127,17 @@ export default function Profile() {
         }
 
         // Fetch hosted quests (unchanged)
-        const userRef = doc(db, 'users', handlePart);
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) {
-          console.warn('⚠️ User data not found in users');
-          return;
-        }
+        const flpRef = doc(db, 'flp_names', handlePart);
+const flpSnap = await getDoc(flpRef);
+if (!flpSnap.exists()) {
+  console.warn('⚠️ flp_names data not found');
+  return;
+}
 
-        const userData = userSnap.data();
-        const hosted = userData.hosted_quests || [];
-        console.log('📚 Hosted quest IDs:', hosted);
+const flpData = flpSnap.data();
+const hosted = flpData.hosted_quests || [];
+console.log('📚 Hosted quest IDs from flp_names:', hosted);
+
 
         const quests = await Promise.all(
           hosted.map(async (q: any) => {
