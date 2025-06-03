@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import Quest from '../../components/Quest';
 import { app, db } from '../firebase/config';
+import { getMyGroupsWithMembers, type GroupWithMembers } from '../firebase/groupService';
 
 const auth = getAuth(app);
 const { width } = Dimensions.get('window');
@@ -28,8 +29,8 @@ const badgeImage5 = require('../../assets/images/questionmark.jpeg');
 
 const badgeList = [
   { title: 'Host', description: "You've hosted 3 quests!", image: badgeImage, locked: false },
-  { title: 'Connector', description: 'You’ve invited 5 friends to join quests!', image: badgeImage2, locked: false },
-  { title: 'Explorer', description: 'You’ve joined 10 different types of quests!', image: badgeImage4, locked: false },
+  { title: 'Connector', description: 'You\'ve invited 5 friends to join quests!', image: badgeImage2, locked: false },
+  { title: 'Explorer', description: 'You\'ve joined 10 different types of quests!', image: badgeImage4, locked: false },
   { title: 'Legend', description: 'Host 10 quests to earn this badge.', image: badgeImage3, locked: false, progress: 0.65 },
   { title: 'Mystery', description: 'Complete 5 secret quests to unlock this badge.', image: badgeImage5, locked: true },
   { title: 'Secret Quest', description: 'Find and complete a hidden quest on campus.', image: badgeImage5, locked: true },
@@ -42,7 +43,7 @@ export default function Profile() {
   const [fullName, setFullName] = useState('');
   const [handle, setHandle] = useState('');
   const [hostedQuests, setHostedQuests] = useState<any[]>([]);
-  const [userGroups, setUserGroups] = useState<{ name: string; members: string[] }[]>([]);
+  const [userGroups, setUserGroups] = useState<GroupWithMembers[]>([]);
 
   const toggleExpand = (name: string) => {
     setExpanded(expanded === name ? null : name);
@@ -72,10 +73,7 @@ export default function Profile() {
 
       const email = user.email || '';
       const pre_handlePart = email.split('@')[0];
-      //const handlePart = pre_handlePart.charAt(0).toUpperCase() + pre_handlePart.slice(1);
       const handlePart = pre_handlePart.toLowerCase();
-
-      //console.log('🔠 Capitalized handlePart:', handlePart);
 
       try {
         const profileRef = doc(db, 'flp_names', handlePart);
@@ -87,26 +85,47 @@ export default function Profile() {
           setFullName(`${profileData.first_name} ${profileData.last_name}`);
           setHandle(profileData['@']);
 
-          // Fetch group IDs and resolve from 'groups' collection
-          const groupIds = Array.isArray(profileData.groups) ? profileData.groups.slice(0, 3) : [];
-          console.log('🆔 Group IDs from flp_names:', groupIds);
+          // Use the same group service function as manage groups page
+          try {
+            console.log('🔍 Loading groups with members for handle:', handlePart);
+            const groupsWithMembers = await getMyGroupsWithMembers(handlePart);
+            console.log('✅ Groups with members loaded:', groupsWithMembers);
+            
+            // Only show the first 3 groups as before
+            const limitedGroups = groupsWithMembers.slice(0, 3);
+            setUserGroups(limitedGroups);
+          } catch (groupError) {
+            console.error('❌ Error loading groups with members:', groupError);
+            // Fallback to the old method if the new method fails
+            const groupIds = Array.isArray(profileData.groups) ? profileData.groups.slice(0, 3) : [];
+            console.log('🆔 Group IDs from flp_names (fallback):', groupIds);
 
-          const groupDocs = await Promise.all(
-            groupIds.map(async (id: string) => {
-              const snap = await getDoc(doc(db, 'groups', id));
-              if (!snap.exists()) return null;
-              const group = snap.data();
-              return { name: group.name, members: group.members || [] };
-            })
-          );
+            const groupDocs = await Promise.all(
+              groupIds.map(async (id: string) => {
+                const snap = await getDoc(doc(db, 'groups', id));
+                if (!snap.exists()) return null;
+                const group = snap.data();
+                return { 
+                  id,
+                  name: group.name, 
+                  memberHandles: group.memberHandles || [],
+                  members: [], // Empty members array for fallback
+                  ownerHandle: group.ownerHandle,
+                  createdAt: group.createdAt,
+                  updatedAt: group.updatedAt
+                };
+              })
+            );
 
-          const validGroups = groupDocs.filter(Boolean);
-          console.log('📘 Loaded groups:', validGroups);
-          setUserGroups(validGroups);
+            const validGroups = groupDocs.filter(Boolean) as GroupWithMembers[];
+            console.log('📘 Loaded groups (fallback):', validGroups);
+            setUserGroups(validGroups);
+          }
         } else {
           console.warn('⚠️ Profile not found in flp_names');
         }
 
+        // Fetch hosted quests (unchanged)
         const userRef = doc(db, 'users', handlePart);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) {
@@ -160,27 +179,43 @@ export default function Profile() {
       <Text style={styles.sectionTitle}>Recent Groups:</Text>
       <View style={{ paddingHorizontal: 16 }}>
         {userGroups.map((group, idx) => (
-          <View key={idx} style={styles.card}>
+          <View key={group.id || idx} style={styles.card}>
             <TouchableOpacity onPress={() => toggleExpand(group.name)} style={styles.cardHeader}>
               <View>
                 <Text style={styles.groupName}>{group.name}</Text>
-                <Text style={styles.memberCount}>{group.members.length} members</Text>
+                <Text style={styles.memberCount}>
+                  {group.members.length} member{group.members.length === 1 ? '' : 's'}
+                </Text>
               </View>
               <Text style={{ fontSize: 20 }}>{expanded === group.name ? '▲' : '▼'}</Text>
             </TouchableOpacity>
             {expanded === group.name && (
               <View style={styles.cardBody}>
                 <View style={styles.memberRow}>
-                  {group.members.map((m, i) => (
-                    <View key={i} style={styles.chip}>
-                      <Text style={styles.chipText}>{m}</Text>
-                    </View>
-                  ))}
+                  {group.members.length > 0 ? (
+                    group.members.map((member, i) => (
+                      <View key={member.handle || i} style={styles.chip}>
+                        <Text style={styles.chipText}>{member.displayName}</Text>
+                      </View>
+                    ))
+                  ) : (
+                    // Fallback: show member handles if members array is empty
+                    group.memberHandles.map((memberHandle, i) => (
+                      <View key={memberHandle || i} style={styles.chip}>
+                        <Text style={styles.chipText}>{memberHandle}</Text>
+                      </View>
+                    ))
+                  )}
                 </View>
               </View>
             )}
           </View>
         ))}
+        {userGroups.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No groups yet</Text>
+          </View>
+        )}
       </View>
 
       <TouchableOpacity style={styles.manageButton} onPress={() => router.push('/manage-groups')}>
@@ -232,7 +267,6 @@ export default function Profile() {
   );
 }
 
-// styles (unchanged from previous version)
 const styles = StyleSheet.create({
   scrollContainer: { paddingBottom: 40 },
   header: {
@@ -248,7 +282,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   curve: {
-    position: 'absolute',
+    position: 'relative',
     bottom: 0,
     width: width,
     height: 100,
@@ -417,5 +451,13 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 12,
     color: '#333',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#666',
   },
 });

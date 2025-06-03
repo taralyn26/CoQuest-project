@@ -93,13 +93,36 @@ export default function NewQuest() {
     { key: 'pickTime', label: 'Select time' },
   ];
 
-  const times = Array.from({ length: 48 }).map((_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 ? '30' : '00';
-    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-    const ampm = hour < 12 ? 'AM' : 'PM';
-    return `${displayHour}:${minute} ${ampm}`;
-  });
+  // Generate times for the next 24 hours only
+  const generateNext24HourTimes = () => {
+    const times = [];
+    const now = new Date();
+    const currentMinutes = now.getMinutes();
+    const currentHour = now.getHours();
+    
+    // Round to next 30-minute interval
+    let startMinute = currentMinutes <= 30 ? 30 : 0;
+    let startHour = currentMinutes <= 30 ? currentHour : currentHour + 1;
+    
+    // Generate 48 time slots (24 hours * 2 slots per hour)
+    for (let i = 0; i < 48; i++) {
+      const hour = (startHour + Math.floor(i / 2)) % 24;
+      const minute = (startMinute + (i % 2) * 30) % 60;
+      
+      // Adjust hour if minute wrapped around
+      const adjustedHour = minute === 0 && startMinute === 30 && i % 2 === 1 ? hour + 1 : hour;
+      
+      const displayHour = adjustedHour % 12 === 0 ? 12 : adjustedHour % 12;
+      const minuteStr = minute.toString().padStart(2, '0');
+      const ampm = adjustedHour < 12 ? 'AM' : 'PM';
+      
+      times.push(`${displayHour}:${minuteStr} ${ampm}`);
+    }
+    
+    return times;
+  };
+
+  const times = generateNext24HourTimes();
 
   const fetchLocationSuggestions = async () => {
     if (!location) return;
@@ -141,6 +164,11 @@ export default function NewQuest() {
         if (ampm === 'PM' && hour !== 12) hour += 12;
         if (ampm === 'AM' && hour === 12) hour = 0;
         startTime.setHours(hour, minute, 0, 0);
+        
+        // If the selected time is earlier than current time, it must be tomorrow
+        if (startTime <= new Date()) {
+          startTime.setDate(startTime.getDate() + 1);
+        }
       }
 
       const duration = durationOption === 'custom'
@@ -300,6 +328,15 @@ export default function NewQuest() {
         )}
 
         <Text style={styles.label}>When</Text>
+        
+        {/* Spontaneity Note */}
+        <View style={styles.spontaneityNote}>
+          <Ionicons name="flash" size={16} color={PURPLE} style={{ marginRight: 6 }} />
+          <Text style={styles.spontaneityText}>
+            We encourage spontaneity so we only allow you to schedule events 24 hours in advance
+          </Text>
+        </View>
+        
         <View style={styles.optionRowEven}>
           {whenOptions.map(opt => (
             <Pressable
@@ -507,6 +544,23 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     color: '#333',
+  },
+  spontaneityNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F0FF',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8E0FF',
+  },
+  spontaneityText: {
+    flex: 1,
+    fontSize: 14,
+    color: PURPLE,
+    fontStyle: 'italic',
+    lineHeight: 18,
   },
   optionRowEven: {
     flexDirection: 'row',
