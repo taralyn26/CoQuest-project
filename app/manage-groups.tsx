@@ -68,7 +68,9 @@ export default function ManageGroups() {
     loadGroups();
     
     // Set up real-time subscription
-    const currentHandle = user.email?.split('@')[0];
+    //const currentHandle = user.email?.split('@')[0];
+    const currentHandle = user.email?.split('@')[0].toLowerCase();
+
     console.log('📧 Setting up subscription for handle:', currentHandle);
     
     if (currentHandle) {
@@ -108,7 +110,9 @@ export default function ManageGroups() {
     
     
     const pre_currentHandle = user.email?.split('@')[0];
-    const currentHandle = pre_currentHandle.charAt(0).toUpperCase() + pre_currentHandle.slice(1);
+    //const currentHandle = pre_currentHandle.charAt(0).toUpperCase() + pre_currentHandle.slice(1);
+    const currentHandle = pre_currentHandle.toLowerCase();
+
 
     console.log('📧 Extracted handle:', currentHandle);
     

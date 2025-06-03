@@ -72,8 +72,10 @@ export default function Profile() {
 
       const email = user.email || '';
       const pre_handlePart = email.split('@')[0];
-      const handlePart = pre_handlePart.charAt(0).toUpperCase() + pre_handlePart.slice(1);
-      console.log('🔠 Capitalized handlePart:', handlePart);
+      //const handlePart = pre_handlePart.charAt(0).toUpperCase() + pre_handlePart.slice(1);
+      const handlePart = pre_handlePart.toLowerCase();
+
+      //console.log('🔠 Capitalized handlePart:', handlePart);
 
       try {
         const profileRef = doc(db, 'flp_names', handlePart);

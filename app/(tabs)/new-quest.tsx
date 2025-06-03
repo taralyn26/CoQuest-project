@@ -4,14 +4,13 @@ import { addDoc, arrayUnion, collection, doc, getDoc, Timestamp, updateDoc } fro
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 import { auth, db } from '../firebase/config';
 
@@ -21,7 +20,7 @@ const LIGHTGRAY = '#F2F7FD';
 
 export default function NewQuest() {
   const router = useRouter();
-  const [description, setDescription] = useState('');
+  //const [description, setDescription] = useState('');
   const [quest, setQuest] = useState('');
   const [location, setLocation] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -210,7 +209,8 @@ export default function NewQuest() {
       
             await Promise.all(
               memberHandles.map(async (handle: string) => {
-                const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
+                //const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
+                const capitalizedHandle = handle.toLowerCase();
                 const memberRef = doc(db, 'flp_names', capitalizedHandle);
       
                 console.log(`Updating member: ${capitalizedHandle} with quest ID: ${questRef.id}`);

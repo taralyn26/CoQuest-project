@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { auth, db } from '../firebase/config';
+import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   Image,
@@ -12,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { auth, db } from '../firebase/config';
+//import { auth, db } from '../firebase/config';
 
 const PURPLE = '#56018D';
 const questImage = require('../../assets/images/mall.png');
@@ -24,11 +24,17 @@ export default function QuestDetailPage() {
   const [readableLocation, setReadableLocation] = useState<string>('Loading location...');
   const [isRSVPed, setIsRSVPed] = useState(false);
 
+  // const currentUserHandle = (() => {
+  //   const email = auth.currentUser?.email || '';
+  //   const handle = email.split('@')[0];
+  //   return handle.charAt(0).toUpperCase() + handle.slice(1);
+  // })();
+
   const currentUserHandle = (() => {
     const email = auth.currentUser?.email || '';
-    const handle = email.split('@')[0];
-    return handle.charAt(0).toUpperCase() + handle.slice(1);
+    return email.split('@')[0].toLowerCase();
   })();
+  
 
   const currentUser = auth.currentUser;
   const handle = currentUser?.email?.split('@')[0].toLowerCase();
