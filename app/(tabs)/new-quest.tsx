@@ -84,9 +84,7 @@ export default function NewQuest() {
       .slice(0, 2);
   
   const initials = getInitials(hostName);
-  const avatarColor = ['#FFD166', '#06D6A0', '#EF476F', '#118AB2', '#8338EC'][
-    Math.floor(Math.random() * 5)
-  ];
+  const avatarColor = '#6B7280'; // Grey color for all avatars
 
   const whenOptions = [
     { key: 'now', label: 'Now' },
@@ -427,18 +425,6 @@ export default function NewQuest() {
           />
         )}
 
-        <Text style={styles.sectionTitle}>Hosted by</Text>
-        <View style={styles.hostContainer}>
-        <View style={[styles.avatarCircle, { backgroundColor: avatarColor }]}>
-          <Text style={styles.avatarInitials}>{initials}</Text>
-        </View>
-        <Text style={styles.hostName}>{hostName}</Text>
-        <Pressable style={styles.addHostsButton}>
-          <Text style={styles.addHostsText}>+ Add CoHosts</Text>
-        </Pressable>
-      </View>
-
-
         <Text style={styles.sectionTitle}>Who can see this</Text>
         <View>
           <Pressable
@@ -675,17 +661,6 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#333',
   },
-  addHostsButton: {
-    borderWidth: 1,
-    borderColor: PURPLE,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  addHostsText: {
-    color: PURPLE,
-    fontWeight: '500',
-  },
   visibilityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -725,6 +700,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 12,
   },
   avatarInitials: {
     color: 'white',
