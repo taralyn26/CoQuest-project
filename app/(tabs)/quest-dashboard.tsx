@@ -11,6 +11,8 @@ import {
 import Quest from '../../components/Quest';
 import { auth, db } from '../firebase/config';
 
+import { onSnapshot } from 'firebase/firestore';
+
 const filters = ['Upcoming', 'Hosting', 'Past'];
 
 export default function QuestDashboard() {
@@ -21,69 +23,84 @@ export default function QuestDashboard() {
   const [hostedPast, setHostedPast] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchQuests = async () => {
-      try {
-        //const ref = doc(db, 'users', 'test_user_001');
-
-        const currentUser = auth.currentUser;
-        const email = currentUser?.email || '';
-        const handle = email.split('@')[0].toLowerCase();
-        const ref = doc(db, 'flp_names', handle);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return;
-
-        const data = snap.data();
-        const display = data.display_quests || [];
-        const hosted = data.hosted_quests || [];
-        const now = Date.now() / 1000;
-
-        const all = [...display, ...hosted].map((q: any) => (typeof q === 'string' ? q : q.id));
-        const result = await Promise.all(
-          all.map(async (id) => {
-            const qSnap = await getDoc(doc(db, 'quests', id));
-            if (!qSnap.exists()) return null;
-            const quest = qSnap.data();
-            return { id, ...quest };
-          })
-        );
-
-        const upcomingQs = result
-          .filter(q => q?.end_time?.seconds > now && display.includes(q.id))
-          .sort((a, b) => a.end_time.seconds - b.end_time.seconds);
-
-        const pastQs = result
-          .filter(q => q?.end_time?.seconds <= now && display.includes(q.id))
-          .sort((a, b) => b.end_time.seconds - a.end_time.seconds);
-
-        const hostedU = result
-          .filter(q => q?.end_time?.seconds > now && hosted.includes(q.id))
-          .sort((a, b) => a.end_time.seconds - b.end_time.seconds);
-
-        const hostedP = result
-          .filter(q => q?.end_time?.seconds <= now && hosted.includes(q.id))
-          .sort((a, b) => b.end_time.seconds - a.end_time.seconds);
-
-        setUpcoming(upcomingQs);
-        setPast(pastQs);
-        setHostedUpcoming(hostedU);
-        setHostedPast(hostedP);
-      } catch (err) {
-        console.error('❌ Failed to load user quests:', err);
-      }
-    };
-
-    fetchQuests();
+    const currentUser = auth.currentUser;
+    const email = currentUser?.email || '';
+    const handle = email.split('@')[0].toLowerCase();
+    const userRef = doc(db, 'flp_names', handle);
+  
+    const unsubscribe = onSnapshot(userRef, async (snap) => {
+      if (!snap.exists()) return;
+  
+      const data = snap.data();
+      const display = data.display_quests || [];
+      const hosted = data.hosted_quests || [];
+      const now = Date.now() / 1000;
+  
+      //const all = [...display, ...hosted].map((q: any) => (typeof q === 'string' ? q : q.id));
+      const all = Array.from(new Set([...display, ...hosted].map((q: any) =>
+        typeof q === 'string' ? q : q.id
+      )));
+      
+      const result = await Promise.all(
+        all.map(async (id) => {
+          const qSnap = await getDoc(doc(db, 'quests', id));
+          if (!qSnap.exists()) return null;
+          const quest = qSnap.data();
+          return { id, ...quest };
+        })
+      );
+  
+      const upcomingQs = result
+        .filter(q => q?.end_time?.seconds > now && display.includes(q.id))
+        .sort((a, b) => a.end_time.seconds - b.end_time.seconds);
+  
+      const pastQs = result
+        .filter(q => q?.end_time?.seconds <= now && display.includes(q.id))
+        .sort((a, b) => b.end_time.seconds - a.end_time.seconds);
+  
+      const hostedU = result
+        .filter(q => q?.end_time?.seconds > now && hosted.includes(q.id))
+        .sort((a, b) => a.end_time.seconds - b.end_time.seconds);
+  
+      const hostedP = result
+        .filter(q => q?.end_time?.seconds <= now && hosted.includes(q.id))
+        .sort((a, b) => b.end_time.seconds - a.end_time.seconds);
+  
+      setUpcoming(upcomingQs);
+      setPast(pastQs);
+      setHostedUpcoming(hostedU);
+      setHostedPast(hostedP);
+    });
+  
+    return () => unsubscribe(); // clean up listener on unmount
   }, []);
 
-  const renderQuests = (list: any[]) => (
-    <View style={styles.questGrid}>
-      {list.map((q) => (
-        <View key={q.id} style={styles.questWrapper}>
-          <Quest id={q.id} from="quest-dashboard" />
-        </View>
-      ))}
-    </View>
-  );
+  
+  const renderQuests = (list: any[]) => {
+    const uniqueQuests = Array.from(
+      new Map(list.map((q) => [q.id, q])).values()
+    );
+    return (
+      <View style={styles.questGrid}>
+        {uniqueQuests.map((q) => (
+          <View key={q.id} style={styles.questWrapper}>
+            <Quest id={q.id} from="quest-dashboard" />
+          </View>
+        ))}
+      </View>
+    );
+  };
+  
+  
+  // const renderQuests = (list: any[]) => (
+  //   <View style={styles.questGrid}>
+  //     {list.map((q) => (
+  //       <View key={q.id} style={styles.questWrapper}>
+  //         <Quest id={q.id} from="quest-dashboard" />
+  //       </View>
+  //     ))}
+  //   </View>
+  // );
 
   return (
     <SafeAreaView style={styles.safe}>

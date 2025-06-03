@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { addDoc, arrayUnion, collection, doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, Timestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -13,6 +13,7 @@ import {
   View
 } from 'react-native';
 import { auth, db } from '../firebase/config';
+
 
 
 const PURPLE = '#56018D';
@@ -121,7 +122,7 @@ export default function NewQuest() {
       Alert.alert('Missing Fields', 'Please provide a quest name and location.');
       return;
     }
-
+  
     try {
       const res = await fetch(
         `https://api.locationiq.com/v1/autocomplete.php?key=pk.7f060c5daf66db53424ea6be3f65b9f7&q=${encodeURIComponent(location)}&format=json`
@@ -131,7 +132,7 @@ export default function NewQuest() {
         latitude: parseFloat(locationData[0].lat),
         longitude: parseFloat(locationData[0].lon),
       };
-
+  
       let startTime = new Date();
       if (whenOption === 'pickTime' && pickedTime !== 'Select time') {
         const [timeStr, ampm] = pickedTime.split(' ');
@@ -142,15 +143,15 @@ export default function NewQuest() {
         if (ampm === 'AM' && hour === 12) hour = 0;
         startTime.setHours(hour, minute, 0, 0);
       }
-
+  
       const duration = durationOption === 'custom'
         ? parseInt(customDuration)
         : parseInt(durationOption);
       const endTime = new Date(startTime.getTime() + duration * 60000);
-
+  
       let numInGroup = 0;
       let uniqueGroupID = '';
-
+  
       if (visibility === 'All Campus') {
         numInGroup = 0;
         uniqueGroupID = 'All Campus';
@@ -167,8 +168,7 @@ export default function NewQuest() {
           }
         }
       }
-
-
+  
       const questRef = await addDoc(collection(db, 'quests'), {
         name: quest,
         location: coordinates,
@@ -181,46 +181,64 @@ export default function NewQuest() {
         attendees: [hostName],
         description: description,
       });
-      
-      
-
-
+  
       const userRef = doc(db, 'flp_names', hostName);
       console.log('Updating host:', hostName, 'with quest ID:', questRef.id);
       await updateDoc(userRef, {
         hosted_quests: arrayUnion(questRef.id),
       });
-      if (visibility !== 'All Campus') {
+  
+      if (visibility === 'All Campus') {
+        try {
+          console.log('Broadcasting to ALL campus users...');
+          const allUsersSnap = await getDocs(collection(db, 'flp_names'));
+  
+          await Promise.all(
+            allUsersSnap.docs.map(async (userDoc) => {
+              const userId = userDoc.id;
+              const userRef = doc(db, 'flp_names', userId);
+              console.log(`Updating user: ${userId} with quest ID: ${questRef.id}`);
+              await updateDoc(userRef, {
+                display_quests: arrayUnion(questRef.id),
+              });
+            })
+          );
+  
+          console.log('Successfully broadcasted to all campus users.');
+        } catch (err) {
+          console.error('Error broadcasting to all campus users:', err);
+        }
+      } else {
         try {
           console.log('Visibility is restricted to group:', visibility);
           const matchedGroup = userGroups.find(g => g.name === visibility);
-        if (!matchedGroup) {
-          console.warn('No matching group found for name:', visibility);
-          return;
-        }
-        const groupRef = doc(db, 'groups', matchedGroup.id);
+          if (!matchedGroup) {
+            console.warn('No matching group found for name:', visibility);
+            return;
+          }
+  
+          const groupRef = doc(db, 'groups', matchedGroup.id);
           const groupSnap = await getDoc(groupRef);
-      
+  
           if (groupSnap.exists()) {
             const groupData = groupSnap.data();
             const memberHandles = groupData.memberHandles || [];
-      
+  
             console.log('Fetched group members:', memberHandles);
-      
+  
             await Promise.all(
               memberHandles.map(async (handle: string) => {
-                //const capitalizedHandle = handle.charAt(0).toUpperCase() + handle.slice(1);
                 const capitalizedHandle = handle.toLowerCase();
                 const memberRef = doc(db, 'flp_names', capitalizedHandle);
-      
+  
                 console.log(`Updating member: ${capitalizedHandle} with quest ID: ${questRef.id}`);
-      
+  
                 await updateDoc(memberRef, {
                   display_quests: arrayUnion(questRef.id),
                 });
               })
             );
-      
+  
             console.log('Successfully updated all group members with quest ID.');
           } else {
             console.warn('Group document not found:', visibility);
@@ -229,7 +247,7 @@ export default function NewQuest() {
           console.error('Error updating display_quests for group members:', err);
         }
       }
-
+  
       Alert.alert('Quest Posted!', 'Your quest has been broadcast.');
       router.push('/(tabs)/map');
     } catch (error) {
@@ -237,7 +255,7 @@ export default function NewQuest() {
       Alert.alert('Error', 'Failed to broadcast your quest. Please try again.');
     }
   };
-
+  
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
