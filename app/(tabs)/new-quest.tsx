@@ -787,6 +787,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 16,
+    marginBottom: 50,
   },
   broadcastButtonDisabled: {
     backgroundColor: '#999',
