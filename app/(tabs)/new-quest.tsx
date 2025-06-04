@@ -301,9 +301,10 @@ export default function NewQuest() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Pressable style={styles.back} onPress={() => router.push('/(tabs)/map')}>
-          <Ionicons name="arrow-back" size={24} color={styles.header.color} />
-        </Pressable>
+      <Pressable style={styles.back} onPress={() => router.push('/(tabs)/map')}>
+  <Ionicons name="close" size={28} color={styles.header.color} />
+</Pressable>
+
 
         <Text style={styles.header}>New Quest</Text>
 
