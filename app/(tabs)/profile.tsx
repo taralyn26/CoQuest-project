@@ -84,7 +84,8 @@ export default function Profile() {
           const profileData = profileSnap.data();
           console.log('📄 Profile data:', profileData);
           setFullName(`${profileData.first_name} ${profileData.last_name}`);
-          setHandle(profileData['@']);
+          setHandle(handlePart);
+
 
           // Use the same group service function as manage groups page
           try {
@@ -178,6 +179,7 @@ console.log('📚 Hosted quest IDs from flp_names:', hosted);
       <Text style={styles.title}>{fullName}</Text>
       <Text style={styles.user}>@{handle}</Text>
 
+
       <Text style={styles.sectionTitle}>Recent Groups:</Text>
       <View style={{ paddingHorizontal: 16 }}>
         {userGroups.map((group, idx) => (
@@ -233,21 +235,7 @@ console.log('📚 Hosted quest IDs from flp_names:', hosted);
         ))}
       </ScrollView>
 
-      <Text style={styles.sectionTitle}>My Badges:</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.questScroll}>
-        {badgeList.map((badge, idx) => (
-          <TouchableOpacity key={idx} onPress={() => setSelectedBadge(badge)}>
-            <View style={[styles.badgeCard, badge.locked && styles.locked]}>
-              <Text style={styles.badgeTitle}>{badge.title}</Text>
-              {badge.progress !== undefined && (
-                <View style={styles.progressBarBackground}>
-                  <View style={[styles.progressBarFill, { width: `${badge.progress * 100}%` }]} />
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+    
 
       <Modal visible={!!selectedBadge} transparent animationType="fade" onRequestClose={() => setSelectedBadge(null)}>
         <View style={styles.modalBackdrop}>
@@ -270,7 +258,7 @@ console.log('📚 Hosted quest IDs from flp_names:', hosted);
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: { paddingBottom: 40 },
+  scrollContainer: { paddingBottom: 80 },
   header: {
     position: 'relative',
     width: '100%',

@@ -37,6 +37,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e830b440-56df-43d6-961a-c648699833ff"
+      }
+    },
+    "owner": "taralyn"
   }
 }
