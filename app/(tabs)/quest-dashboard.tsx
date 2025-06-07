@@ -12,7 +12,7 @@ import Quest from '../../components/Quest';
 import { auth, db } from '../firebase/config';
 
 const filters = ['Upcoming', 'Hosting', 'Past'];
-
+//make sure we see the different states
 export default function QuestDashboard() {
   const [selected, setSelected] = useState('Upcoming');
   const [upcoming, setUpcoming] = useState<any[]>([]);

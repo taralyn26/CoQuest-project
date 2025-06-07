@@ -1,4 +1,3 @@
-// app/signup.tsx
 import { doc, setDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
@@ -35,10 +34,10 @@ export default function SignUp({ onSignUp, onGoToLogin }: Props) {
     }
     
     try {
-      // This will now create both the Firebase Auth user AND the Firestore user profile
+      //this will now create both the Firebase Auth user AND the Firestore user profile
       await signUp(email, password, firstName, lastName);
       
-      // Also create the flp_names document (for your existing functionality)
+      //make sure to also create the flp_names document (for your existing functionality)
       const handle = email.split('@')[0].toLowerCase();
       await setDoc(doc(db, 'flp_names', handle), {
         first_name: firstName.trim(),

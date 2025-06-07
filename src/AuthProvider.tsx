@@ -11,7 +11,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 
   useEffect(() => {
     const unsub = subscribe(setUser, console.error);
-    return unsub; // cleanup on unmount
+    return unsub; //cleanup on unmount
   }, []);
 
   return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;

@@ -21,7 +21,6 @@ const LIGHTGRAY = '#F2F7FD';
 
 export default function NewQuest() {
   const router = useRouter();
-  //const [description, setDescription] = useState('');
   const [quest, setQuest] = useState('');
   const [location, setLocation] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -32,18 +31,18 @@ export default function NewQuest() {
   const [customDuration, setCustomDuration] = useState('');
   const [customDurationVisible, setCustomDurationVisible] = useState(false);
   const [photoAdded, setPhotoAdded] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState(''); // NEW: Photo selection state
+  const [selectedPhoto, setSelectedPhoto] = useState(''); //Photo selection state
   const [visibility, setVisibility] = useState('All Campus');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userGroups, setUserGroups] = useState<{ id: string; name: string }[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [isLoading, setIsLoading] = useState(false); //loading state
 
   const hostAvatar = require('../../assets/images/pic.png');
   const currentUser = auth.currentUser;
   const email = currentUser.displayName || currentUser.email || currentUser.uid;
   const [description, setDescription] = useState('');
 
-  // NEW: Photo options
+  //different photo options with some cool emojis, good job
   const photoOptions = [
     { id: 'social', label: 'Social', emoji: '🎉' },
     { id: 'gym', label: 'Gym', emoji: '💪' },
@@ -52,8 +51,7 @@ export default function NewQuest() {
     { id: 'car', label: 'Car', emoji: '🚗' },
   ];
 
-  // const pre_hostName = email.split('@')[0];
-  // const hostName = pre_hostName.charAt(0).toUpperCase() + pre_hostName.slice(1);
+  //make everything case insensitive
   const hostName = (email.split('@')[0] || '').toLowerCase();
 
 
@@ -96,25 +94,25 @@ export default function NewQuest() {
       .slice(0, 2);
   
   const initials = getInitials(hostName);
-  const avatarColor = '#6B7280'; // Grey color for all avatars
+  const avatarColor = '#6B7280'; //grey color for all avatars
 
   const whenOptions = [
     { key: 'now', label: 'Now' },
     { key: 'pickTime', label: 'Select time' },
   ];
 
-  // Generate times for the next 24 hours only
+  //generate times for the next 24 hours only to keep our mission alive
   const generateNext24HourTimes = () => {
     const times = [];
     const now = new Date();
     const currentMinutes = now.getMinutes();
     const currentHour = now.getHours();
     
-    // Round to next 30-minute interval
+    //only 30 minutes interval 
     let startMinute = currentMinutes <= 30 ? 30 : 0;
     let startHour = currentMinutes <= 30 ? currentHour : currentHour + 1;
     
-    // Generate 48 time slots (24 hours * 2 slots per hour)
+    
     for (let i = 0; i < 48; i++) {
       const hour = (startHour + Math.floor(i / 2)) % 24;
       const minute = (startMinute + (i % 2) * 30) % 60;
@@ -136,7 +134,7 @@ export default function NewQuest() {
 
   const fetchLocationSuggestions = async () => {
     if (!location) return;
-
+    //this is api to find places, dont over use do we dont get charged
     try {
       const res = await fetch(
         `https://api.locationiq.com/v1/autocomplete.php?key=pk.7f060c5daf66db53424ea6be3f65b9f7&q=${encodeURIComponent(location)}&format=json`
@@ -149,7 +147,7 @@ export default function NewQuest() {
     }
   };
 
-  // Function to clear all form fields
+  //function to clear all form fields
   const clearForm = () => {
     setQuest('');
     setLocation('');
@@ -172,7 +170,7 @@ export default function NewQuest() {
       return;
     }
 
-    // Prevent double-click by setting loading state
+    //some logic in case of double clicking so not to post twice like for the quest
     if (isLoading) return;
     setIsLoading(true);
   
@@ -196,7 +194,7 @@ export default function NewQuest() {
         if (ampm === 'AM' && hour === 12) hour = 0;
         startTime.setHours(hour, minute, 0, 0);
         
-        // If the selected time is earlier than current time, it must be tomorrow
+        //if the selected time is earlier than current time, it must be tomorrow
         if (startTime <= new Date()) {
           startTime.setDate(startTime.getDate() + 1);
         }
@@ -227,7 +225,7 @@ export default function NewQuest() {
         }
       }
 
-      // UPDATED: Include photo field in Firebase document
+      //Include photo field in Firebase document, backend fixes
       const questRef = await addDoc(collection(db, 'quests'), {
         name: quest,
         location: coordinates,
@@ -239,7 +237,7 @@ export default function NewQuest() {
         num_in_group: numInGroup,
         attendees: [hostName],
         description: description,
-        photo: selectedPhoto, // NEW: Save photo category label
+        photo: selectedPhoto,
       });
       
       const userRef = doc(db, 'flp_names', hostName);
@@ -288,13 +286,13 @@ export default function NewQuest() {
       }
 
       Alert.alert('Quest Posted!', 'Your quest has been broadcast.');
-      clearForm(); // Clear form after successful broadcast
+      clearForm(); // make sure we have a clean form after broadcasting a quest
       router.push('/(tabs)/map');
     } catch (error) {
       console.error('Broadcast Error:', error);
       Alert.alert('Error', 'Failed to broadcast your quest. Please try again.');
     } finally {
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false); //loading state (see new quest)
     }
   };
 
@@ -818,7 +816,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     marginBottom: 16,
-    elevation: 2, // subtle shadow on Android
+    elevation: 2, 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,

@@ -15,7 +15,7 @@ import { auth, db } from '../firebase/config';
 
 import { onSnapshot } from 'firebase/firestore';
 
-// Import category images
+//import category images to see the different quests
 const categoryImages = {
   social: require('../../assets/images/social.png'),
   gym: require('../../assets/images/gym.png'), 
@@ -24,7 +24,7 @@ const categoryImages = {
   car: require('../../assets/images/car.png'),
 };
 
-// Fallback image if no category is specified
+//this would be defaul so fallback image if no category is specified
 const defaultImage = require('../../assets/images/mall.png');
 
 export default function Map() {
@@ -86,21 +86,21 @@ export default function Map() {
     );
 
     const filtered = results.filter(Boolean) as any[];
-    console.log('✅ Live updated quests on map:', filtered.map((q) => q.name));
+    console.log('RIGHT, Live updated quests on map:', filtered.map((q) => q.name));
     setQuests(filtered);
   });
 
-  return () => unsubscribe(); // cleanup
+  return () => unsubscribe(); //cleanup, this way we keep updating to check if there is anything changed
 }, []);
   
-  // Function to get the correct image for a quest
+  //some logic to get the correct image for a quest
   const getQuestImage = (quest: any) => {
-    // Check if quest has a photo category
+    //sanity check, ceck if quest has a photo category
     if (quest.photo && categoryImages[quest.photo]) {
       return categoryImages[quest.photo];
     }
     
-    // Fall back to default image
+    //default
     return defaultImage;
   };
 
@@ -139,8 +139,8 @@ export default function Map() {
         onRegionChangeComplete={handleRegionChangeComplete}
       >
         {quests.map((quest, index) => {
-        // Offset slightly if other quests have same lat/lng
-        const offsetLat = index * 0.00005; // ~5m
+        //correct placing
+        const offsetLat = index * 0.00005; 
         const offsetLng = index * 0.00005;
 
         const adjustedLat = quest.location.latitude + offsetLat;
@@ -153,7 +153,7 @@ export default function Map() {
     latitude: adjustedLat,
     longitude: adjustedLng,
   }}
-  onPress={() => openPopup(quest)} // <--- move tap handler here
+  onPress={() => openPopup(quest)} 
 >
   <View style={{ alignItems: 'center', justifyContent: 'center' }}>
     <Ionicons name="location-sharp" size={40} color={PURPLE} />

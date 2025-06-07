@@ -1,4 +1,3 @@
-// app/manage-groups.tsx (Fixed JSX structure)
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -31,32 +30,31 @@ export default function ManageGroups() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  // Test function to check basic Firestore access
   const testFirestore = async () => {
     try {
-      console.log('🧪 Testing basic Firestore access...');
+      console.log(' Testing basic Firestore access...');
       const users = await getAllUsers();
-      console.log('✅ Firestore test successful. Users found:', users.length);
-      console.log('👥 Users data:', users);
+      console.log(' Firestore test successful. Users found:', users.length);
+      console.log(' Users data:', users);
     } catch (error) {
-      console.error('❌ Firestore test failed:', error);
-      console.error('❌ Firestore error details:', error.message);
+      console.error(' Firestore test failed:', error);
+      console.error(' Firestore error details:', error.message);
     }
   };
 
   useEffect(() => {
-    console.log('🔄 useEffect triggered');
-    console.log('👤 User in useEffect:', user);
+    console.log(' useEffect triggered');
+    console.log(' User in useEffect:', user);
     
     // If user is undefined, auth is still loading
     if (user === undefined) {
-      console.log('⏳ Auth still loading, waiting...');
+      console.log(' Auth still loading, waiting...');
       return;
     }
     
     // If user is null, they're not logged in
     if (user === null) {
-      console.log('❌ No user logged in');
+      console.log(' No user logged in');
       setLoading(false);
       return;
     }
@@ -77,11 +75,11 @@ export default function ManageGroups() {
       const unsubscribe = subscribeToMyGroups(
         currentHandle,
         () => {
-          console.log('🔔 Subscription triggered, reloading groups...');
+          console.log(' Subscription triggered, reloading groups...');
           loadGroups();
         },
         (error) => {
-          console.error('❌ Error in groups subscription:', error);
+          console.error(' Error in groups subscription:', error);
         }
       );
       
@@ -90,23 +88,23 @@ export default function ManageGroups() {
   }, [user]);
 
   const loadGroups = async () => {
-    console.log('🚀 loadGroups called');
+    console.log(' loadGroups called');
     
     // Check for undefined (still loading) vs null (not logged in)
     if (user === undefined) {
-      console.log('⏳ User still loading');
+      console.log(' User still loading');
       return;
     }
     
     if (!user) {
-      console.log('❌ No user found');
+      console.log(' No user found');
       setLoading(false);
       return;
     }
     
-    console.log('👤 Current user object:', user);
-    console.log('📧 User email:', user.email);
-    console.log('🆔 User UID:', user.uid);
+    console.log(' Current user object:', user);
+    console.log(' User email:', user.email);
+    console.log(' User UID:', user.uid);
     
     
     const pre_currentHandle = user.email?.split('@')[0];
@@ -114,31 +112,31 @@ export default function ManageGroups() {
     const currentHandle = pre_currentHandle.toLowerCase();
 
 
-    console.log('📧 Extracted handle:', currentHandle);
+    console.log(' Extracted handle:', currentHandle);
     
     if (!currentHandle) {
-      console.log('❌ No handle found from email');
+      console.log(' No handle found from email');
       setLoading(false);
       return;
     }
     
     try {
-      console.log('🔍 About to call getMyGroupsWithMembers for handle:', currentHandle);
+      console.log(' About to call getMyGroupsWithMembers for handle:', currentHandle);
       const groupsWithMembers = await getMyGroupsWithMembers(currentHandle);
-      console.log('✅ getMyGroupsWithMembers returned successfully');
-      console.log('📊 Number of groups found:', groupsWithMembers.length);
-      console.log('📋 Groups data:', groupsWithMembers);
+      console.log(' getMyGroupsWithMembers returned successfully');
+      console.log(' Number of groups found:', groupsWithMembers.length);
+      console.log(' Groups data:', groupsWithMembers);
       
       setGroups(groupsWithMembers);
       console.log('💾 Groups state updated');
     } catch (error) {
-      console.error('❌ Error in loadGroups:', error);
-      console.error('❌ Error type:', typeof error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Error stack:', error.stack);
+      console.error(' Error in loadGroups:', error);
+      console.error(' Error type:', typeof error);
+      console.error(' Error message:', error.message);
+      console.error(' Error stack:', error.stack);
       Alert.alert('Error', 'Failed to load groups: ' + error.message);
     } finally {
-      console.log('🏁 Setting loading to false');
+      console.log(' Setting loading to false');
       setLoading(false);
     }
   };
@@ -160,11 +158,11 @@ export default function ManageGroups() {
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('🗑️ Deleting group:', groupId);
+              console.log(' Deleting group:', groupId);
               await deleteGroup(groupId);
-              console.log('✅ Group deleted successfully');
+              console.log(' Group deleted successfully');
             } catch (error) {
-              console.error('❌ Error deleting group:', error);
+              console.error(' Error deleting group:', error);
               Alert.alert('Error', 'Failed to delete group');
             }
           },
@@ -173,7 +171,7 @@ export default function ManageGroups() {
     );
   };
 
-  console.log('🎨 Rendering ManageGroups, user:', user, 'loading:', loading, 'groups count:', groups.length);
+  console.log(' Rendering ManageGroups, user:', user, 'loading:', loading, 'groups count:', groups.length);
 
   // Show loading while auth is determining user state
   if (user === undefined || loading) {
@@ -259,7 +257,7 @@ export default function ManageGroups() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60, // Increased top padding for better positioning
+    paddingTop: 60, 
     paddingHorizontal: 16,
     backgroundColor: 'white',
     paddingBottom: 40,

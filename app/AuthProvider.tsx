@@ -1,4 +1,3 @@
-// src/AuthProvider.tsx
 import { onAuthStateChanged, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../app/firebase/config';
@@ -13,10 +12,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null | undefined>(undefined);
 
   useEffect(() => {
-    console.log('🔥 AuthProvider mounted, setting up auth listener...');
+    console.log('GOODJOB AuthProvider mounted, setting up auth listener...');
     
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log('🔥 Firebase Auth state changed:', firebaseUser ? 'User found' : 'No user');
+      console.log('FIRE or Firebase Auth state changed:', firebaseUser ? 'User found' : 'No user');
       if (firebaseUser) {
         console.log('👤 User email:', firebaseUser.email);
         console.log('🆔 User UID:', firebaseUser.uid);
@@ -25,12 +24,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => {
-      console.log('🔥 AuthProvider unmounting, cleaning up listener');
+      console.log('goood AuthProvider unmounting, cleaning up listener');
       unsubscribe();
     };
   }, []);
 
-  console.log('🔥 AuthProvider rendering, user state:', user ? 'logged in' : user === null ? 'logged out' : 'loading');
+  console.log('meh AuthProvider rendering, user state:', user ? 'logged in' : user === null ? 'logged out' : 'loading');
 
   return (
     <AuthContext.Provider value={{ user }}>

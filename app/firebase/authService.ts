@@ -1,4 +1,3 @@
-// app/firebase/authService.ts
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -8,9 +7,7 @@ import {
 } from 'firebase/auth';
 import { auth } from './config';
 
-// //// PURE WRAPPERS /////////////////////////////////////
 
-// Simple signup - no Firestore profile creation here
 export async function signUp(
   email: string, 
   pwd: string, 
@@ -28,7 +25,7 @@ export async function logout() {
   return signOut(auth);
 }
 
-// util to watch login state globally
+//we use util to watch login state globally
 export function subscribe(
   cb: (user: User | null) => void,
   error?: (e: Error) => void,

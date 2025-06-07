@@ -1,4 +1,3 @@
-// app/AppContent.tsx
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -13,9 +12,9 @@ export default function AppContent() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
 
   useEffect(() => {
-    console.log('👤 Auth state changed:', user);
+    console.log('oeii, Auth state changed:', user);
     if (user) {
-      console.log('✅ Redirecting to /map');
+      console.log('Noice, Redirecting to /map');
       router.replace('/(tabs)/map');
     }
   }, [user]);

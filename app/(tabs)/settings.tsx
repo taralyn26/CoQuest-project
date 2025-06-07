@@ -1,4 +1,4 @@
-// app/(tabs)/settings.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -56,7 +56,7 @@ export default function Settings() {
               console.log('👋 Logged out');
               router.replace('/');
             } catch (e: any) {
-              console.error('❌ Logout failed:', e.message);
+              console.error('Woop Woop, Logout failed:', e.message);
             }
           }}
         >

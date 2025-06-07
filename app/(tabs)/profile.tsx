@@ -60,11 +60,11 @@ export default function Profile() {
   const initials = useMemo(() => {
     if (!fullName) return '';
     const result = getInitials(fullName);
-    console.log('✅ Initials computed:', result);
+    console.log('RIGHT, Initials computed:', result);
     return result;
   }, [fullName]);
 
-  // Use grey color for all avatars
+  //use grey color for all avatars
   const avatarColor = '#6B7280';
 
   useEffect(() => {
@@ -87,20 +87,20 @@ export default function Profile() {
           setHandle(handlePart);
 
 
-          // Use the same group service function as manage groups page
+          //make sure use the same group service function as manage groups page
           try {
             console.log('🔍 Loading groups with members for handle:', handlePart);
             const groupsWithMembers = await getMyGroupsWithMembers(handlePart);
-            console.log('✅ Groups with members loaded:', groupsWithMembers);
+            console.log('RIGHT, Groups with members loaded:', groupsWithMembers);
             
             // Only show the first 3 groups as before
             const limitedGroups = groupsWithMembers.slice(0, 3);
             setUserGroups(limitedGroups);
           } catch (groupError) {
-            console.error('❌ Error loading groups with members:', groupError);
-            // Fallback to the old method if the new method fails
+            console.error('WRONG, Error loading groups with members:', groupError);
+            //fallback to the old method if the new method fails
             const groupIds = Array.isArray(profileData.groups) ? profileData.groups.slice(0, 3) : [];
-            console.log('🆔 Group IDs from flp_names (fallback):', groupIds);
+            console.log('Group IDs from flp_names (fallback):', groupIds);
 
             const groupDocs = await Promise.all(
               groupIds.map(async (id: string) => {
@@ -111,7 +111,7 @@ export default function Profile() {
                   id,
                   name: group.name, 
                   memberHandles: group.memberHandles || [],
-                  members: [], // Empty members array for fallback
+                  members: [], //just empty members array for fallback
                   ownerHandle: group.ownerHandle,
                   createdAt: group.createdAt,
                   updatedAt: group.updatedAt
@@ -120,24 +120,24 @@ export default function Profile() {
             );
 
             const validGroups = groupDocs.filter(Boolean) as GroupWithMembers[];
-            console.log('📘 Loaded groups (fallback):', validGroups);
+            console.log(' Loaded groups (fallback):', validGroups);
             setUserGroups(validGroups);
           }
         } else {
-          console.warn('⚠️ Profile not found in flp_names');
+          console.warn(' Profile not found in flp_names');
         }
 
-        // Fetch hosted quests (unchanged)
+        
         const flpRef = doc(db, 'flp_names', handlePart);
 const flpSnap = await getDoc(flpRef);
 if (!flpSnap.exists()) {
-  console.warn('⚠️ flp_names data not found');
+  console.warn(' flp_names data not found');
   return;
 }
 
 const flpData = flpSnap.data();
 const hosted = flpData.hosted_quests || [];
-console.log('📚 Hosted quest IDs from flp_names:', hosted);
+console.log(' Hosted quest IDs from flp_names:', hosted);
 
 
         const quests = await Promise.all(
@@ -153,9 +153,9 @@ console.log('📚 Hosted quest IDs from flp_names:', hosted);
         const valid = quests.filter(Boolean) as { id: string; end_time?: { seconds: number } }[];
         valid.sort((a, b) => (a.end_time?.seconds ?? 0) - (b.end_time?.seconds ?? 0));
         setHostedQuests(valid);
-        console.log('✅ Valid hosted quests:', valid);
+        console.log('CORRECT, Valid hosted quests:', valid);
       } catch (err) {
-        console.error('❌ Error in fetchProfileAndQuests:', err);
+        console.error('WRONG bruh, Error in fetchProfileAndQuests:', err);
       }
     };
 
@@ -203,7 +203,7 @@ console.log('📚 Hosted quest IDs from flp_names:', hosted);
                       </View>
                     ))
                   ) : (
-                    // Fallback: show member handles if members array is empty
+                    //show member handles if members array is empty
                     group.memberHandles.map((memberHandle, i) => (
                       <View key={memberHandle || i} style={styles.chip}>
                         <Text style={styles.chipText}>{memberHandle}</Text>

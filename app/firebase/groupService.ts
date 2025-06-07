@@ -47,7 +47,7 @@ export async function createGroup(
     throw new Error('At least one member is required');
   }
 
-  //const capitalizedOwner = ownerHandle.charAt(0).toUpperCase() + ownerHandle.slice(1);
+  //const capitalizedOwner = ownerHandle.charAt(0).toUpperCase() + ownerHandle.slice(1);//WRONG LOGIC bruh
   const lowercaseOwner = ownerHandle.toLowerCase();
 
   const groupsRef = collection(db, 'groups');
@@ -61,7 +61,7 @@ export async function createGroup(
 
   const docRef = await addDoc(groupsRef, groupData);
 
-  // Add group ID to flp_names under capitalized owner handle
+  //this is for the backend, we addd group ID to flp_names under owner handle
   const userRef = doc(db, 'flp_names', lowercaseOwner);
   await updateDoc(userRef, {
     groups: arrayUnion(docRef.id),
@@ -71,7 +71,7 @@ export async function createGroup(
 }
 
 /**
- * Get all groups owned by the current user (by handle)
+ *so we can get all groups owned by the current user (by handle)
  */
 export async function getMyGroups(ownerHandle: string): Promise<Group[]> {
   const groupsRef = collection(db, 'groups');
@@ -95,7 +95,7 @@ export async function getMyGroups(ownerHandle: string): Promise<Group[]> {
 }
 
 /**
- * Get groups with member details populated
+ *now get groups with member details populated
  */
 export async function getMyGroupsWithMembers(ownerHandle: string): Promise<GroupWithMembers[]> {
   const groups = await getMyGroups(ownerHandle);
@@ -120,9 +120,7 @@ export async function getMyGroupsWithMembers(ownerHandle: string): Promise<Group
   return groupsWithMembers;
 }
 
-/**
- * Update group name
- */
+
 export async function updateGroupName(
   groupId: string,
   newName: string
@@ -138,9 +136,7 @@ export async function updateGroupName(
   });
 }
 
-/**
- * Update group members
- */
+//update the group memmbers 
 export async function updateGroupMembers(
   groupId: string,
   memberHandles: string[]
@@ -156,17 +152,13 @@ export async function updateGroupMembers(
   });
 }
 
-/**
- * Delete a group
- */
+//get rid of it
 export async function deleteGroup(groupId: string): Promise<void> {
   const groupRef = doc(db, 'groups', groupId);
   await deleteDoc(groupRef);
 }
 
-/**
- * Subscribe to real-time updates for user's groups
- */
+
 export function subscribeToMyGroups(
   ownerHandle: string,
   callback: (groups: Group[]) => void,

@@ -1,26 +1,23 @@
-// app/firebase/userService.ts
 import {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    orderBy,
-    query,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
 } from 'firebase/firestore';
 import { db } from './config';
   
   export interface UserProfile {
-    handle: string; // email handle (e.g., "jack" from "jack@stanford.edu")
+    handle: string; // email handle (so like, "jack" from "jack@stanford.edu")
     email: string;
     first_name: string;
     last_name: string;
     displayName: string; // computed: first_name + last_name
-    uid?: string; // Firebase Auth UID (we'll need to match this somehow)
+    uid?: string; //for Firebase Auth UID (we'll need to match this somehow)
   }
   
-  /**
-   * Get a specific user profile by handle
-   */
+//get profile handle
   export async function getUserProfileByHandle(handle: string): Promise<UserProfile | null> {
     const userRef = doc(db, 'flp_names', handle);
     const userSnap = await getDoc(userRef);
@@ -29,7 +26,7 @@ import { db } from './config';
       const data = userSnap.data();
       return {
         handle: data["@"] || handle,
-        email: `${handle}@stanford.edu`, // reconstruct email
+        email: `${handle}@stanford.edu`, // get back the email reconstruct email, there is a probably better way to do this
         first_name: data.first_name,
         last_name: data.last_name,
         displayName: `${data.first_name} ${data.last_name}`.trim(),
@@ -38,10 +35,7 @@ import { db } from './config';
     return null;
   }
   
-  /**
-   * Get all users for searching/adding to groups
-   * Returns all users from flp_names collection
-   */
+//mamange group logic 
   export async function getAllUsers(): Promise<UserProfile[]> {
     const usersRef = collection(db, 'flp_names');
     const q = query(usersRef, orderBy('first_name'));
@@ -64,17 +58,14 @@ import { db } from './config';
     
     return users;
   }
-  
-  /**
-   * Search users by display name
-   */
+
   export async function searchUsers(
     searchTerm: string,
     currentUserHandle?: string
   ): Promise<UserProfile[]> {
     const allUsers = await getAllUsers();
     
-    // Filter out current user if provided (case-insensitive)
+    //filter out current user if provided (case-insensitive)
     let filteredUsers = allUsers;
     if (currentUserHandle) {
       filteredUsers = allUsers.filter(user => 

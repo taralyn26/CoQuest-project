@@ -1,4 +1,3 @@
-// app/(tabs)/create-group.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -30,20 +29,20 @@ export default function CreateGroup() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
-  // Load users on component mount
+  //get them useres to load on component mount
   useEffect(() => {
-    console.log('🔄 useEffect triggered in CreateGroup');
-    console.log('👤 User in useEffect:', user);
+    console.log('bri useEffect triggered in CreateGroup');
+    console.log('GG User in useEffect:', user);
     
     // If user is undefined, auth is still loading
     if (user === undefined) {
-      console.log('⏳ Auth still loading, waiting...');
+      console.log('WAITT Auth still loading, waiting...');
       return;
     }
     
     // If user is null, they're not logged in
     if (user === null) {
-      console.log('❌ No user logged in');
+      console.log('NOPE No user logged in');
       setLoading(false);
       return;
     }
@@ -52,44 +51,44 @@ export default function CreateGroup() {
   }, [user]);
 
   const loadUsers = async () => {
-    console.log('🚀 loadUsers called');
+    console.log('lesgoo loadUsers called');
     
-    // Check for undefined (still loading) vs null (not logged in)
+    //check for undefined (still loading) vs null (not logged in)
     if (user === undefined) {
-      console.log('⏳ User still loading');
+      console.log('waiting User still loading');
       return;
     }
     
     if (!user) {
-      console.log('❌ No user found');
+      console.log('wrongg No user found');
       setLoading(false);
       return;
     }
     
-    console.log('👤 Current user in loadUsers:', user.email);
+    console.log('user, Current user in loadUsers:', user.email);
     
     try {
       setLoading(true);
       const currentHandle = user.email?.split('@')[0];
-      console.log('📧 Current handle:', currentHandle);
-      console.log('🔍 About to call searchUsers...');
+      console.log(' Current handle:', currentHandle);
+      console.log(' About to call searchUsers...');
       
       const users = await searchUsers('', currentHandle);
-      console.log('✅ Users loaded:', users.length);
-      console.log('👥 Users data:', users);
+      console.log(' Users loaded:', users.length);
+      console.log(' Users data:', users);
       
       setAllUsers(users);
     } catch (error) {
-      console.error('❌ Error loading users:', error);
-      console.error('❌ Error details:', error.message);
+      console.error(' Error loading users:', error);
+      console.error(' Error details:', error.message);
       Alert.alert('Error', 'Failed to load users');
     } finally {
-      console.log('🏁 Setting loading to false in loadUsers');
+      console.log(' Setting loading to false in loadUsers');
       setLoading(false);
     }
   };
 
-  // Filter users based on search term
+  //filter users based on search term
   const filtered = useMemo(() => {
     if (!search.trim()) return allUsers;
     
@@ -111,10 +110,10 @@ export default function CreateGroup() {
   const canCreate = groupName.trim().length > 0 && selected.length > 0 && !creating;
 
   const handleCreateGroup = async () => {
-    console.log('🎯 handleCreateGroup called');
-    console.log('👤 User in handleCreateGroup:', user?.email);
-    console.log('📝 Group name:', groupName);
-    console.log('👥 Selected members:', selected);
+    console.log(' handleCreateGroup called');
+    console.log(' User in handleCreateGroup:', user?.email);
+    console.log(' Group name:', groupName);
+    console.log(' Selected members:', selected);
     
     if (!canCreate || !user) return;
     
@@ -122,7 +121,7 @@ export default function CreateGroup() {
       setCreating(true);
       
       const currentHandle = user.email?.split('@')[0];
-      console.log('📧 Current handle for group creation:', currentHandle);
+      console.log(' Current handle for group creation:', currentHandle);
       
       if (!currentHandle) {
         throw new Error('Unable to get user handle');
@@ -130,7 +129,7 @@ export default function CreateGroup() {
       
       console.log('🔍 About to create group...');
       await createGroup(groupName.trim(), selected, currentHandle);
-      console.log('✅ Group created successfully');
+      console.log(' Group created successfully');
       
       Alert.alert(
         'Success!', 
@@ -138,17 +137,16 @@ export default function CreateGroup() {
         [{ text: 'OK', onPress: () => router.back() }]
       );
     } catch (error) {
-      console.error('❌ Error creating group:', error);
-      console.error('❌ Error details:', error.message);
+      console.error(' Error creating group:', error);
+      console.error(' Error details:', error.message);
       Alert.alert('Error', 'Failed to create group. Please try again.');
     } finally {
       setCreating(false);
     }
   };
 
-  console.log('🎨 Rendering CreateGroup, user:', user, 'loading:', loading);
-
-  // Show loading while auth is determining user state OR while loading users
+  console.log(' Rendering CreateGroup, user:', user, 'loading:', loading);
+  //loadin
   if (user === undefined || loading) {
     return (
       <SafeAreaView style={styles.safe}>

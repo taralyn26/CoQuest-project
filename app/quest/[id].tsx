@@ -61,7 +61,7 @@ export default function QuestDetailPage() {
             const groupRef = doc(db, 'groups', groupID);
             const groupSnap = await getDoc(groupRef);
             if (groupSnap.exists()) {
-              // optional group data
+              // :)
             }
           }
 
@@ -81,7 +81,7 @@ export default function QuestDetailPage() {
           }
         }
       } catch (err) {
-        console.error('❌ Fetch failed:', err);
+        console.error('WRONG, Fetch failed:', err);
       }
     };
 

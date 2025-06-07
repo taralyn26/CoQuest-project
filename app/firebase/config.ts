@@ -1,5 +1,4 @@
-// app/firebase/config.ts
-//import AsyncStorage from '@react-native-async-storage/async-storage';
+//from firebase directly
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
 import {
@@ -8,8 +7,7 @@ import {
   type Auth,
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-//import { getFirestore } from 'firebase/firestore'; // <-- ADD THIS LINE
-
+//SUPER secret dont tell anybody!!!
 const firebaseConfig = {
   apiKey: "AIzaSyDBgMcaiT-7FSBCY11HsVzhsigasATAtoE",
   authDomain: "coquest-99dac.firebaseapp.com",
@@ -22,13 +20,11 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 export const db = getFirestore(firebaseApp);
 
-// Auth export
+//the Auth export
 export const auth: Auth = initializeAuth(firebaseApp, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
 
-//export const db = getFirestore(firebaseApp);
-// ✅ Firestore export
-//export const db = getFirestore(firebaseApp);
+
 
 
